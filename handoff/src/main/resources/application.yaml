@@ -2,10 +2,17 @@ spring:
   main:
     banner-mode: off
 
+  # Lê o .env da raiz do repositório (ou da pasta atual), se existir.
+  # Em produção, as mesmas chaves vêm de variáveis de ambiente.
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/handoff
-    username: handoff
-    password: handoff123
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:handoff}
+    username: ${DB_USERNAME:handoff}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   flyway:
@@ -14,5 +21,14 @@ spring:
       - classpath:db/migration
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate
+
+handoff:
+  jwt:
+    # Obrigatório, sem valor padrão: defina HANDOFF_JWT_SECRET (mínimo de 32 caracteres).
+    secret: ${HANDOFF_JWT_SECRET}
+    issuer: handoff
+    access-token-ttl: 15m
+    refresh-token-ttl: 7d
