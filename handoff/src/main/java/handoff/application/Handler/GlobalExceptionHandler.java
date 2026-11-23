@@ -1,8 +1,8 @@
-package handoff.application.Web;
+package handoff.application.Handler;
 
-import handoff.application.Auth.EmailAlreadyUsedException;
-import handoff.application.Auth.InvalidCredentialsException;
-import handoff.application.Auth.InvalidRefreshTokenException;
+import handoff.application.Exception.EmailAlreadyUsedException;
+import handoff.application.Exception.InvalidCredentialsException;
+import handoff.application.Exception.InvalidRefreshTokenException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -19,15 +19,15 @@ import java.util.Map;
 
 // Respostas de erro no formato RFC 9457 (application/problem+json).
 @RestControllerAdvice
-public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyUsedException.class)
-    ProblemDetail emailAlreadyUsed(EmailAlreadyUsedException e) {
+    public ProblemDetail handleEmailAlreadyUsed(EmailAlreadyUsedException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
     @ExceptionHandler({InvalidCredentialsException.class, InvalidRefreshTokenException.class})
-    ProblemDetail unauthorized(RuntimeException e) {
+    public ProblemDetail handleUnauthorized(RuntimeException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
 

@@ -1,9 +1,10 @@
-package handoff.application.Auth;
+package handoff.application.Controller;
 
-import handoff.application.Auth.AuthDtos.AuthResponse;
-import handoff.application.Auth.AuthDtos.LoginRequest;
-import handoff.application.Auth.AuthDtos.RefreshRequest;
-import handoff.application.Auth.AuthDtos.SignupRequest;
+import handoff.application.Dto.LoginRequestDto;
+import handoff.application.Dto.RefreshTokenRequestDto;
+import handoff.application.Dto.RegisterRequestDto;
+import handoff.application.Dto.TokenResponseDto;
+import handoff.application.Service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,25 +21,27 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/signup")
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse signup(@Valid @RequestBody SignupRequest request) {
-        return authService.signup(request);
+    public TokenResponseDto register(@RequestBody @Valid RegisterRequestDto registerRequestDto) {
+        return authService.register(registerRequestDto);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    @ResponseStatus(HttpStatus.OK)
+    public TokenResponseDto login(@RequestBody @Valid LoginRequestDto loginRequestDto) {
+        return authService.login(loginRequestDto);
     }
 
     @PostMapping("/refresh")
-    public AuthResponse refresh(@Valid @RequestBody RefreshRequest request) {
+    @ResponseStatus(HttpStatus.OK)
+    public TokenResponseDto refresh(@RequestBody @Valid RefreshTokenRequestDto request) {
         return authService.refresh(request.refreshToken());
     }
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(@Valid @RequestBody RefreshRequest request) {
+    public void logout(@RequestBody @Valid RefreshTokenRequestDto request) {
         authService.logout(request.refreshToken());
     }
 }
