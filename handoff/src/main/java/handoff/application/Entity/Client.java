@@ -21,7 +21,6 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // preenchido e filtrado pelo Hibernate (TenantIdentifierResolver)
     @TenantId
     @Column(name = "organization_id", nullable = false, updatable = false)
     private UUID organizationId;

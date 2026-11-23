@@ -39,7 +39,6 @@ public class ProjectService {
     @Transactional
     public ProjectResponseDto create(ProjectRequestDto request) {
         Project project = new Project();
-        // o cliente precisa ser da mesma organização; se não for, 404
         project.setClient(clientService.find(request.clientId()));
         project.setName(request.name().trim());
         return ProjectResponseDto.from(projectRepository.saveAndFlush(project));

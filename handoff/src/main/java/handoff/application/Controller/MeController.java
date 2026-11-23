@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/app/me")
 public class MeController {
 
-    // O principal é o próprio AppUser, colocado no SecurityContext pelo
-    // JwtAuthenticationFilter (já com a organização carregada).
     @GetMapping
     public MeResponseDto me(@AuthenticationPrincipal AppUser user) {
         Organization organization = user.getOrganization();

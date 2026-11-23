@@ -23,15 +23,13 @@ public class TokenProvider {
     private final SecretKey signingKey;
     private final Duration expiration;
 
-    // Keys.hmacShaKeyFor recusa chaves com menos de 256 bits, então uma chave
-    // fraca derruba a aplicação já na subida.
+
     public TokenProvider(@Value("${jwt.key}") String key,
                          @Value("${jwt.expiration}") Duration expiration) {
         this.signingKey = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
         this.expiration = expiration;
     }
 
-    // gerar um token
     public String generateToken(AppUser user) {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + expiration.toMillis());
@@ -47,7 +45,6 @@ public class TokenProvider {
                 .compact();
     }
 
-    // validar um token (assinatura e expiração)
     public boolean isValid(String token) {
         try {
             extractClaims(token);
@@ -56,8 +53,6 @@ public class TokenProvider {
             return false;
         }
     }
-
-    // extrair informações do token
     public String extractUsername(String token) {
         return extractClaims(token).getSubject();
     }

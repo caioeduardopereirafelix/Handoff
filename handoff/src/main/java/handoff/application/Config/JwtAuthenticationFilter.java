@@ -16,9 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// Lê o "Authorization: Bearer <jwt>", valida o token e coloca o usuário
-// autenticado no SecurityContext. Sem token válido, a requisição segue
-// anônima e o SecurityConfiguration decide se responde 401.
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -50,7 +47,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void authenticate(String username) {
         try {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            // usuário desativado depois de receber o token perde o acesso na hora
             if (!userDetails.isEnabled()) {
                 return;
             }

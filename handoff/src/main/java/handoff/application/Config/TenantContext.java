@@ -8,9 +8,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
-// Fonte única da organização da requisição. A regra de ouro: o orgId nunca vem
-// do corpo, da URL ou de um header — sai sempre do usuário autenticado pelo
-// JwtAuthenticationFilter.
 @Component
 public class TenantContext {
 

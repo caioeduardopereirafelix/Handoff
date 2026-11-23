@@ -21,13 +21,10 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // preenchido e filtrado pelo Hibernate (TenantIdentifierResolver)
     @TenantId
     @Column(name = "organization_id", nullable = false, updatable = false)
     private UUID organizationId;
 
-    // No banco, (client_id, organization_id) é FK composta para client: um
-    // projeto nunca aponta para cliente de outra organização.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;

@@ -39,8 +39,6 @@ public class RefreshTokenService {
         return issue(user, UUID.randomUUID()).raw();
     }
 
-    // noRollbackFor: a revogação da família em caso de reuso precisa ser
-    // gravada mesmo com a exceção sendo lançada.
     @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
     public Rotation rotate(String rawToken) {
         Instant now = clock.instant();

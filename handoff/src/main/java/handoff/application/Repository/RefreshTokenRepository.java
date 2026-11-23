@@ -14,8 +14,6 @@ import java.util.UUID;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
 
-    // Trava a linha para que duas chamadas de refresh com o mesmo token
-    // não consigam rotacioná-lo ao mesmo tempo.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from RefreshToken t where t.tokenHash = :hash")
     Optional<RefreshToken> findForUpdateByTokenHash(@Param("hash") String tokenHash);

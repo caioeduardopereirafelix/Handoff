@@ -35,8 +35,6 @@ public class ClientService {
         return ClientResponseDto.from(find(id));
     }
 
-    // organization_id não é preenchido aqui: o Hibernate coloca o da
-    // requisição no insert (@TenantId).
     @Transactional
     public ClientResponseDto create(ClientRequestDto request) {
         Client client = new Client();

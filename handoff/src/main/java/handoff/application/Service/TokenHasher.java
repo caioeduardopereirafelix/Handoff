@@ -7,8 +7,6 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HexFormat;
 
-// Gera tokens opacos (refresh token agora, link do portal depois) e o hash
-// que vai para o banco. O token puro nunca é persistido.
 public final class TokenHasher {
 
     private static final SecureRandom RANDOM = new SecureRandom();

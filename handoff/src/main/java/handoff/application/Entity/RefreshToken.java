@@ -23,12 +23,9 @@ public class RefreshToken {
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private AppUser user;
 
-    // SHA-256 do token em hex; o token puro só existe na resposta ao cliente
     @Column(name = "token_hash", nullable = false, unique = true, length = 64)
     private String tokenHash;
 
-    // Agrupa os tokens de um mesmo login: se um token revogado for reutilizado,
-    // a família inteira é revogada
     @Column(name = "family_id", nullable = false, updatable = false)
     private UUID familyId;
 

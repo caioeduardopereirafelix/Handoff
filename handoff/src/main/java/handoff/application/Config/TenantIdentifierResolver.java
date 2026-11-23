@@ -9,19 +9,11 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.UUID;
 
-// Segunda camada do isolamento. Toda entidade com @TenantId (Client, Project...)
-// passa a ter, automaticamente:
-//   - "where organization_id = :tenant" em toda consulta, inclusive JPQL;
-//   - organization_id preenchido no insert com a organização da requisição.
-// Mesmo que um repositório esqueça de filtrar, o Hibernate não devolve dados de
-// outra organização.
+
 @Component
 @RequiredArgsConstructor
 public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver<UUID>, HibernatePropertiesCustomizer {
 
-    // Sessões sem usuário autenticado (login, cadastro, o próprio filtro JWT
-    // carregando o usuário) só tocam tabelas sem @TenantId; o "root" desliga o
-    // filtro para elas.
     static final UUID ROOT = new UUID(0, 0);
 
     private final TenantContext tenantContext;

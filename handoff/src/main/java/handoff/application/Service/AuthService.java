@@ -39,7 +39,6 @@ public class AuthService {
     private final TokenProvider tokenProvider;
     private final RefreshTokenService refreshTokenService;
 
-    // O cadastro cria a organização e o usuário OWNER dela.
     @Transactional
     public TokenResponseDto register(RegisterRequestDto request) {
         String email = normalizeEmail(request.email());
@@ -62,16 +61,12 @@ public class AuthService {
         try {
             userRepository.saveAndFlush(user);
         } catch (DataIntegrityViolationException e) {
-            // dois cadastros simultâneos com o mesmo e-mail
             throw new EmailAlreadyUsedException();
         }
 
         return tokensFor(user, refreshTokenService.issueNewFamily(user));
     }
 
-    // O AuthenticationManager confere e-mail e senha via UserDetailsServiceImpl
-    // + BCrypt. Usuário inexistente, senha errada ou conta desativada viram o
-    // mesmo 401, sem revelar qual foi o caso.
     @Transactional
     public TokenResponseDto login(LoginRequestDto request) {
         Authentication authentication;

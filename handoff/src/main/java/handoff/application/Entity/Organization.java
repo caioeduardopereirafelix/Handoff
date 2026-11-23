@@ -23,7 +23,6 @@ public class Organization {
     @Column(nullable = false, length = 120)
     private String name;
 
-    // nome do projeot na url
     @Column(nullable = false, unique = true, length = 80)
     private String slug;
 

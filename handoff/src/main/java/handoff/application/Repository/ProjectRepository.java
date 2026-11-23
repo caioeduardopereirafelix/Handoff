@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-// Primeira camada do isolamento: toda consulta recebe o orgId. Não use o
-// findById herdado do JpaRepository em entidade de negócio.
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
     @EntityGraph(attributePaths = "client")

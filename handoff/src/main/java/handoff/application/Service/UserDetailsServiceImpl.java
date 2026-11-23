@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Locale;
 
-// Usado pelo AuthenticationManager no login e pelo JwtAuthenticationFilter
-// a cada requisição. O "username" do Handoff é o e-mail.
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
