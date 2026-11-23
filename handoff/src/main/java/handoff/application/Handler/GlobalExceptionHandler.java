@@ -1,6 +1,8 @@
 package handoff.application.Handler;
 
+import handoff.application.Exception.ClientHasProjectsException;
 import handoff.application.Exception.EmailAlreadyUsedException;
+import handoff.application.Exception.ResourceNotFoundException;
 import handoff.application.Exception.InvalidCredentialsException;
 import handoff.application.Exception.InvalidRefreshTokenException;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +25,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ProblemDetail handleEmailAlreadyUsed(EmailAlreadyUsedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ProblemDetail handleNotFound(ResourceNotFoundException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(ClientHasProjectsException.class)
+    public ProblemDetail handleClientHasProjects(ClientHasProjectsException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
