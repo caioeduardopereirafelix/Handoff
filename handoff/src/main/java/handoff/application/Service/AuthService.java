@@ -1,15 +1,24 @@
-package handoff.application.Auth;
+package handoff.application.Service;
 
-import handoff.application.Auth.AuthDtos.AuthResponse;
-import handoff.application.Auth.AuthDtos.LoginRequest;
-import handoff.application.Auth.AuthDtos.SignupRequest;
+import handoff.application.Config.TokenProvider;
+import handoff.application.Dto.LoginRequestDto;
+import handoff.application.Dto.RegisterRequestDto;
+import handoff.application.Dto.TokenResponseDto;
 import handoff.application.Entity.AppUser;
 import handoff.application.Entity.AuthProvider;
 import handoff.application.Entity.Organization;
 import handoff.application.Entity.Role;
+import handoff.application.Exception.EmailAlreadyUsedException;
+import handoff.application.Exception.InvalidCredentialsException;
+import handoff.application.Exception.InvalidRefreshTokenException;
 import handoff.application.Repository.AppUserRepository;
 import handoff.application.Repository.OrganizationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,34 +29,19 @@ import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final OrganizationRepository organizationRepository;
     private final AppUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AccessTokenService accessTokenService;
+    private final AuthenticationManager authenticationManager;
+    private final TokenProvider tokenProvider;
     private final RefreshTokenService refreshTokenService;
-
-    // Usado quando o e-mail não existe, para o login levar o mesmo tempo
-    // e não revelar quais e-mails estão cadastrados.
-    private final String dummyPasswordHash;
-
-    public AuthService(OrganizationRepository organizationRepository,
-                       AppUserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       AccessTokenService accessTokenService,
-                       RefreshTokenService refreshTokenService) {
-        this.organizationRepository = organizationRepository;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.accessTokenService = accessTokenService;
-        this.refreshTokenService = refreshTokenService;
-        this.dummyPasswordHash = passwordEncoder.encode("handoff-dummy-password");
-    }
 
     // O cadastro cria a organização e o usuário OWNER dela.
     @Transactional
-    public AuthResponse signup(SignupRequest request) {
+    public TokenResponseDto register(RegisterRequestDto request) {
         String email = normalizeEmail(request.email());
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyUsedException();
@@ -75,21 +69,25 @@ public class AuthService {
         return tokensFor(user, refreshTokenService.issueNewFamily(user));
     }
 
+    // O AuthenticationManager confere e-mail e senha via UserDetailsServiceImpl
+    // + BCrypt. Usuário inexistente, senha errada ou conta desativada viram o
+    // mesmo 401, sem revelar qual foi o caso.
     @Transactional
-    public AuthResponse login(LoginRequest request) {
-        AppUser user = userRepository.findByEmail(normalizeEmail(request.email())).orElse(null);
-
-        boolean passwordMatches = passwordEncoder.matches(request.password(),
-                user != null && user.getPassword() != null ? user.getPassword() : dummyPasswordHash);
-
-        if (user == null || user.getAuthProvider() != AuthProvider.LOCAL || !user.isActive() || !passwordMatches) {
+    public TokenResponseDto login(LoginRequestDto request) {
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(normalizeEmail(request.email()), request.password()));
+        } catch (AuthenticationException e) {
             throw new InvalidCredentialsException();
         }
+
+        AppUser user = (AppUser) authentication.getPrincipal();
         return tokensFor(user, refreshTokenService.issueNewFamily(user));
     }
 
     @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
-    public AuthResponse refresh(String refreshToken) {
+    public TokenResponseDto refresh(String refreshToken) {
         RefreshTokenService.Rotation rotation = refreshTokenService.rotate(refreshToken);
         return tokensFor(rotation.user(), rotation.refreshToken());
     }
@@ -99,9 +97,9 @@ public class AuthService {
         refreshTokenService.revokeFamilyOf(refreshToken);
     }
 
-    private AuthResponse tokensFor(AppUser user, String refreshToken) {
-        return new AuthResponse(accessTokenService.issue(user), refreshToken, "Bearer",
-                accessTokenService.accessTokenTtlSeconds());
+    private TokenResponseDto tokensFor(AppUser user, String refreshToken) {
+        return new TokenResponseDto(tokenProvider.generateToken(user), "Bearer",
+                tokenProvider.getExpirationMillis(), refreshToken);
     }
 
     private static String normalizeEmail(String email) {

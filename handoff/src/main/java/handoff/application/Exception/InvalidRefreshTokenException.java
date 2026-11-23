@@ -1,4 +1,4 @@
-package handoff.application.Auth;
+package handoff.application.Exception;
 
 public class InvalidRefreshTokenException extends RuntimeException {
 

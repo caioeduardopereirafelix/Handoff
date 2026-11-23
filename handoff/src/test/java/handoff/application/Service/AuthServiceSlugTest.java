@@ -1,4 +1,4 @@
-package handoff.application.Auth;
+package handoff.application.Service;
 
 import org.junit.jupiter.api.Test;
 

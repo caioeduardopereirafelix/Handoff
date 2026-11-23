@@ -1,4 +1,4 @@
-package handoff.application.Auth;
+package handoff.application.Controller;
 
 import com.jayway.jsonpath.JsonPath;
 import handoff.application.TestcontainersConfiguration;
@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
-        "handoff.jwt.secret=${random.uuid}${random.uuid}",
+        "jwt.key=${random.uuid}${random.uuid}",
         "spring.datasource.password=test"
 })
 @AutoConfigureMockMvc
@@ -40,8 +40,8 @@ class AuthControllerTests {
 
         String body = signup("Estúdio Ação Web", "Caio", email)
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.tokenType", is("Bearer")))
-                .andExpect(jsonPath("$.expiresIn", is(900)))
+                .andExpect(jsonPath("$.type", is("Bearer")))
+                .andExpect(jsonPath("$.expiration", is(900000)))
                 .andExpect(jsonPath("$.refreshToken", notNullValue()))
                 .andReturn().getResponse().getContentAsString();
 
@@ -63,7 +63,7 @@ class AuthControllerTests {
 
     @Test
     void signupWithInvalidDataReturns400WithFieldErrors() throws Exception {
-        mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"organizationName":"","name":"X","email":"nao-e-email","password":"123"}
                                 """))
@@ -132,7 +132,7 @@ class AuthControllerTests {
     }
 
     private ResultActions signup(String organizationName, String name, String email) throws Exception {
-        return mvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON)
+        return mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {"organizationName":"%s","name":"%s","email":"%s","password":"%s"}
                         """.formatted(organizationName, name, email, PASSWORD)));
@@ -156,7 +156,7 @@ class AuthControllerTests {
     }
 
     private static String bearer(String authResponse) {
-        return "Bearer " + JsonPath.read(authResponse, "$.accessToken");
+        return "Bearer " + JsonPath.read(authResponse, "$.token");
     }
 
     private static String refreshTokenOf(String authResponse) {

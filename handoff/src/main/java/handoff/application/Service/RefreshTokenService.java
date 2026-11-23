@@ -1,14 +1,15 @@
-package handoff.application.Auth;
+package handoff.application.Service;
 
-import handoff.application.Config.JwtProperties;
 import handoff.application.Entity.AppUser;
 import handoff.application.Entity.RefreshToken;
+import handoff.application.Exception.InvalidRefreshTokenException;
 import handoff.application.Repository.RefreshTokenRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -16,12 +17,19 @@ import java.util.UUID;
 // anterior. Reapresentar um token já revogado indica roubo, e a família inteira
 // (todos os tokens daquele login) é revogada.
 @Service
-@RequiredArgsConstructor
 public class RefreshTokenService {
 
     private final RefreshTokenRepository repository;
-    private final JwtProperties properties;
+    private final Duration refreshExpiration;
     private final Clock clock;
+
+    public RefreshTokenService(RefreshTokenRepository repository,
+                               @Value("${jwt.refresh-expiration}") Duration refreshExpiration,
+                               Clock clock) {
+        this.repository = repository;
+        this.refreshExpiration = refreshExpiration;
+        this.clock = clock;
+    }
 
     public record Rotation(AppUser user, String refreshToken) {
     }
@@ -44,7 +52,7 @@ public class RefreshTokenService {
             throw new InvalidRefreshTokenException();
         }
         AppUser user = current.getUser();
-        if (!current.isUsable(now) || !user.isActive()) {
+        if (!current.isUsable(now) || !user.isEnabled()) {
             throw new InvalidRefreshTokenException();
         }
 
@@ -71,7 +79,7 @@ public class RefreshTokenService {
         token.setUser(user);
         token.setTokenHash(TokenHasher.sha256Hex(raw));
         token.setFamilyId(familyId);
-        token.setExpiresAt(clock.instant().plus(properties.refreshTokenTtl()));
+        token.setExpiresAt(clock.instant().plus(refreshExpiration));
         return new Issued(repository.saveAndFlush(token), raw);
     }
 }

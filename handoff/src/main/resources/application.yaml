@@ -25,10 +25,8 @@ spring:
     hibernate:
       ddl-auto: validate
 
-handoff:
-  jwt:
-    # Obrigatório, sem valor padrão: defina HANDOFF_JWT_SECRET (mínimo de 32 caracteres).
-    secret: ${HANDOFF_JWT_SECRET}
-    issuer: handoff
-    access-token-ttl: 15m
-    refresh-token-ttl: 7d
+jwt:
+  # Obrigatório, sem valor padrão: defina HANDOFF_JWT_SECRET (mínimo de 32 caracteres).
+  key: ${HANDOFF_JWT_SECRET}
+  expiration: 15m
+  refresh-expiration: 7d

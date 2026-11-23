@@ -1,4 +1,4 @@
-package handoff.application.Auth;
+package handoff.application.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
