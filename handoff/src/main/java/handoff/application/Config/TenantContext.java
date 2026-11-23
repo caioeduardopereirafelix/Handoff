@@ -13,8 +13,14 @@ public class TenantContext {
 
     public Optional<UUID> findOrganizationId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof AppUser user) {
+        if (authentication == null) {
+            return Optional.empty();
+        }
+        if (authentication.getPrincipal() instanceof AppUser user) {
             return Optional.of(user.getOrganization().getId());
+        }
+        if (authentication.getPrincipal() instanceof PortalPrincipal portal) {
+            return Optional.of(portal.organizationId());
         }
         return Optional.empty();
     }

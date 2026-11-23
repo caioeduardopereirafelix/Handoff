@@ -36,6 +36,9 @@ public class Project {
     @Column(nullable = false, length = 20)
     private ProjectStatus status = ProjectStatus.ACTIVE;
 
+    @Column(name = "next_request_number", nullable = false)
+    private int nextRequestNumber = 1;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

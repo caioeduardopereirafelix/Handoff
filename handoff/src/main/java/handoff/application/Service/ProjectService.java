@@ -57,7 +57,7 @@ public class ProjectService {
         projectRepository.delete(find(id));
     }
 
-    private Project find(UUID id) {
+    Project find(UUID id) {
         return projectRepository.findByIdAndOrganizationId(id, tenantContext.getOrganizationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Projeto"));
     }
