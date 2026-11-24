@@ -29,8 +29,10 @@ storage:
   endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
   region: ${STORAGE_REGION:us-east-1}
   bucket: ${STORAGE_BUCKET:handoff}
-  access-key: ${STORAGE_ACCESS_KEY:${MINIO_ROOT_USER:}}
-  secret-key: ${STORAGE_SECRET_KEY:${MINIO_ROOT_PASSWORD:}}
+  access-key: ${STORAGE_ACCESS_KEY:}
+  secret-key: ${STORAGE_SECRET_KEY:}
+  fallback-access-key: ${MINIO_ROOT_USER:}
+  fallback-secret-key: ${MINIO_ROOT_PASSWORD:}
   max-size-bytes: 10485760
   url-expiration: 5m
 
