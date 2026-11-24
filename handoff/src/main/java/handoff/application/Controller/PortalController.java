@@ -1,11 +1,14 @@
 package handoff.application.Controller;
 
 import handoff.application.Config.PortalPrincipal;
+import handoff.application.Dto.CommentResponseDto;
+import handoff.application.Dto.CreateCommentDto;
 import handoff.application.Dto.CreateRequestDto;
 import handoff.application.Dto.PortalProjectDto;
 import handoff.application.Dto.RequestResponseDto;
 import handoff.application.Entity.ActorType;
 import handoff.application.Entity.RequestStatus;
+import handoff.application.Service.CommentService;
 import handoff.application.Service.RequestService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class PortalController {
 
     private final RequestService requestService;
+    private final CommentService commentService;
 
     @GetMapping("/project")
     public PortalProjectDto project(@AuthenticationPrincipal PortalPrincipal portal) {
@@ -43,6 +47,19 @@ public class PortalController {
     @GetMapping("/requests/{id}")
     public RequestResponseDto get(@AuthenticationPrincipal PortalPrincipal portal, @PathVariable UUID id) {
         return requestService.getInProject(portal.projectId(), id);
+    }
+
+    @GetMapping("/requests/{id}/comments")
+    public List<CommentResponseDto> comments(@AuthenticationPrincipal PortalPrincipal portal, @PathVariable UUID id) {
+        return commentService.listInProject(portal.projectId(), id);
+    }
+
+    @PostMapping("/requests/{id}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentResponseDto comment(@AuthenticationPrincipal PortalPrincipal portal,
+                                      @PathVariable UUID id,
+                                      @RequestBody @Valid CreateCommentDto request) {
+        return commentService.addByClient(id, request, portal);
     }
 
     @PostMapping("/requests/{id}/approve")
