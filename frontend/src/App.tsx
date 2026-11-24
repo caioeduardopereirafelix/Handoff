@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './pages/app/AppLayout'
 import { BoardPage } from './pages/app/BoardPage'
 import { NewRequestPage } from './pages/app/NewRequestPage'
+import { NewProjectPage } from './pages/app/NewProjectPage'
+import { ProjectDetailPage } from './pages/app/ProjectDetailPage'
 import { ProjectsPage } from './pages/app/ProjectsPage'
 import { RequestDetailPage } from './pages/app/RequestDetailPage'
 import { LoginPage, RegisterPage } from './pages/auth/AuthPages'
@@ -19,6 +21,8 @@ export function App() {
       <Route path="/app" element={<AppLayout />}>
         <Route index element={<BoardPage />} />
         <Route path="projetos" element={<ProjectsPage />} />
+        <Route path="projetos/novo" element={<NewProjectPage />} />
+        <Route path="projetos/:id" element={<ProjectDetailPage />} />
         <Route path="solicitacoes/nova" element={<NewRequestPage />} />
         <Route path="solicitacoes/:id" element={<RequestDetailPage />} />
       </Route>
