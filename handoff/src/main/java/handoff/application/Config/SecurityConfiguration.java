@@ -34,7 +34,8 @@ public class SecurityConfiguration {
     @Bean
     @Order(1)
     public SecurityFilterChain portalSecurityFilterChain(HttpSecurity http,
-                                                         PortalAccessService portalAccessService) throws Exception {
+                                                         PortalAccessService portalAccessService,
+                                                         TenantContext tenantContext) throws Exception {
         return http
                 .securityMatcher("/api/portal/**")
                 .csrf(AbstractHttpConfigurer::disable)
@@ -45,7 +46,7 @@ public class SecurityConfiguration {
                                 response.setStatus(HttpServletResponse.SC_FORBIDDEN))
                 )
                 .authorizeHttpRequests(auth -> auth.anyRequest().hasRole("CLIENT"))
-                .addFilterBefore(new PortalTokenFilter(portalAccessService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new PortalTokenFilter(portalAccessService, tenantContext), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

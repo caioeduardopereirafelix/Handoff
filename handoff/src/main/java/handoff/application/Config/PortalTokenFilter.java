@@ -22,13 +22,15 @@ public class PortalTokenFilter extends OncePerRequestFilter {
     private static final String PORTAL_PREFIX = "/api/portal/";
 
     private final PortalAccessService portalAccessService;
+    private final TenantContext tenantContext;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         Optional<PortalPrincipal> principal = extractToken(request)
-                .flatMap(token -> portalAccessService.authenticate(token, request.getRemoteAddr()));
+                .flatMap(token -> tenantContext.acrossTenants(
+                        () -> portalAccessService.authenticate(token, request.getRemoteAddr())));
 
         if (principal.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);

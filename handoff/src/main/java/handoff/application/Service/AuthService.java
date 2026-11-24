@@ -12,6 +12,7 @@ import handoff.application.Exception.EmailAlreadyUsedException;
 import handoff.application.Exception.InvalidCredentialsException;
 import handoff.application.Exception.InvalidRefreshTokenException;
 import handoff.application.Repository.AppUserRepository;
+import handoff.application.Validation.MaxBytesValidator;
 import handoff.application.Repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,6 +32,8 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final int MAX_PASSWORD_BYTES = 72;
 
     private final OrganizationRepository organizationRepository;
     private final AppUserRepository userRepository;
@@ -69,6 +72,9 @@ public class AuthService {
 
     @Transactional
     public TokenResponseDto login(LoginRequestDto request) {
+        if (!MaxBytesValidator.fits(request.password(), MAX_PASSWORD_BYTES)) {
+            throw new InvalidCredentialsException();
+        }
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(

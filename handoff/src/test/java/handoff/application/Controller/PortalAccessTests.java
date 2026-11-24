@@ -2,6 +2,7 @@ package handoff.application.Controller;
 
 import com.jayway.jsonpath.JsonPath;
 import handoff.application.ApiTestSupport;
+import handoff.application.Config.TenantContext;
 import handoff.application.Entity.PortalAccess;
 import handoff.application.Repository.PortalAccessRepository;
 import handoff.application.Service.TokenHasher;
@@ -24,6 +25,9 @@ class PortalAccessTests extends ApiTestSupport {
 
     @Autowired
     private PortalAccessRepository portalAccessRepository;
+
+    @Autowired
+    private TenantContext tenantContext;
 
     private String auth;
     private String projectId;
@@ -56,13 +60,15 @@ class PortalAccessTests extends ApiTestSupport {
     void onlyTheHashIsStoredAndUsageIsRecorded() throws Exception {
         String token = createPortalLink(auth, projectId);
 
-        PortalAccess stored = portalAccessRepository.findByTokenHash(TokenHasher.sha256Hex(token)).orElseThrow();
+        PortalAccess stored = tenantContext.acrossTenants(
+                () -> portalAccessRepository.findByTokenHash(TokenHasher.sha256Hex(token)).orElseThrow());
         assertThat(stored.getTokenHash()).isNotEqualTo(token).hasSize(64);
         assertThat(stored.getLastUsedAt()).isNull();
 
         portalGet(token, "/project").andExpect(status().isOk());
 
-        PortalAccess used = portalAccessRepository.findById(stored.getId()).orElseThrow();
+        PortalAccess used = tenantContext.acrossTenants(
+                () -> portalAccessRepository.findById(stored.getId()).orElseThrow());
         assertThat(used.getLastUsedAt()).isNotNull();
         assertThat(used.getLastUsedIp()).isNotBlank();
     }
@@ -96,9 +102,10 @@ class PortalAccessTests extends ApiTestSupport {
     @Test
     void expiredLinkReturns404() throws Exception {
         String token = createPortalLink(auth, projectId);
-        PortalAccess access = portalAccessRepository.findByTokenHash(TokenHasher.sha256Hex(token)).orElseThrow();
+        PortalAccess access = tenantContext.acrossTenants(
+                () -> portalAccessRepository.findByTokenHash(TokenHasher.sha256Hex(token)).orElseThrow());
         access.setExpiresAt(Instant.now().minus(1, ChronoUnit.MINUTES));
-        portalAccessRepository.saveAndFlush(access);
+        tenantContext.acrossTenants(() -> portalAccessRepository.saveAndFlush(access));
 
         portalGet(token, "/project").andExpect(status().isNotFound());
     }

@@ -1,6 +1,7 @@
 package handoff.application;
 
 import com.jayway.jsonpath.JsonPath;
+import handoff.application.Config.TenantContext;
 import handoff.application.Entity.AppUser;
 import handoff.application.Entity.Client;
 import handoff.application.Repository.AppUserRepository;
@@ -30,6 +31,9 @@ class TenantIsolationTests extends ApiTestSupport {
 
     @Autowired
     private AppUserRepository userRepository;
+
+    @Autowired
+    private TenantContext tenantContext;
 
     private String authA;
     private String authB;
@@ -104,6 +108,13 @@ class TenantIsolationTests extends ApiTestSupport {
 
         assertThat(visibleToB).extracting(Client::getName).containsExactly("Cliente de B");
         assertThat(visibleToB).extracting(Client::getId).doesNotContain(UUID.fromString(clientOfA));
+    }
+
+    @Test
+    void withoutAuthenticatedOrganizationQueriesSeeNothing() {
+        assertThat(clientRepository.findAll()).isEmpty();
+        List<Client> allOrganizations = tenantContext.acrossTenants(clientRepository::findAll);
+        assertThat(allOrganizations).extracting(Client::getId).contains(UUID.fromString(clientOfA));
     }
 
     private void createClientDirectly(String name) {

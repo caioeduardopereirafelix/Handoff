@@ -77,6 +77,25 @@ class AuthControllerTests {
     }
 
     @Test
+    void signupRejectsPasswordLongerThan72BytesEvenWithFewerCharacters() throws Exception {
+        String password = "ç".repeat(40);
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"organizationName":"Org Bytes","name":"Caio","email":"%s","password":"%s"}
+                                """.formatted(uniqueEmail(), password)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password", notNullValue()));
+    }
+
+    @Test
+    void loginWithPasswordLongerThan72BytesIsRejectedAs401() throws Exception {
+        String email = uniqueEmail();
+        signup("Org Bytes Login", "Caio", email).andExpect(status().isCreated());
+
+        login(email, "ç".repeat(100)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void loginReturnsTokensAndRejectsWrongPasswordOrUnknownEmail() throws Exception {
         String email = uniqueEmail();
         signup("Org Login", "Caio", email).andExpect(status().isCreated());
