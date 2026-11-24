@@ -29,7 +29,7 @@ export function CreatedLink({ created }: { created: PortalAccessCreated }) {
         {created.emailSent ? ' Também foi enviado por e-mail ao cliente.' : ''}
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        <code style={{ flex: '1 1 320px', minWidth: 0, overflowWrap: 'anywhere', background: '#fff', color: 'var(--ink)', padding: '10px 12px', borderRadius: 10, fontSize: 14 }}>{url}</code>
+        <code style={{ flex: '1 1 320px', minWidth: 0, overflowWrap: 'anywhere', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 12px', borderRadius: 10, fontSize: 14 }}>{url}</code>
         <button type="button" className="btn btn-primary" onClick={copy}><CopyIcon />{copied ? 'Copiado' : 'Copiar link'}</button>
       </div>
     </div>

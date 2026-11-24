@@ -4,6 +4,7 @@ import { app, auth } from '../../api/api'
 import { session } from '../../api/http'
 import type { Me } from '../../api/types'
 import { useLoad } from '../../lib/useLoad'
+import { ThemeToggle } from '../../components/ThemeToggle'
 
 interface AppContextValue {
   me: Me
@@ -43,7 +44,7 @@ export function AppLayout() {
       <div className="app-shell">
         <nav className="app-nav" aria-label="Menu principal">
           <div style={{ padding: '0 12px' }}>
-            <span className="wordmark" style={{ color: '#fff' }}>handoff</span>
+            <span className="wordmark">handoff</span>
             <p style={{ marginTop: 6, fontSize: 14, color: 'var(--nav-muted)' }}>{me.data.organizationName}</p>
           </div>
           <div className="nav-links" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -53,8 +54,9 @@ export function AppLayout() {
             <NavLink to="/app/projetos" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>Projetos</NavLink>
           </div>
           <div className="nav-user" style={{ marginTop: 'auto', padding: '0 12px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--signal)', color: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800 }}>{initials}</span>
+            <span className="avatar">{initials}</span>
             <span style={{ fontSize: 14, color: 'var(--nav-text)' }}>{me.data.name}</span>
+            <ThemeToggle />
             <button type="button" onClick={logout} style={{ background: 'none', border: 0, color: 'var(--nav-muted)', fontSize: 14, textDecoration: 'underline', cursor: 'pointer', minHeight: 44 }}>Sair</button>
           </div>
         </nav>

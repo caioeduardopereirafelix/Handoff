@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../../api/api'
 import { ApiError } from '../../api/http'
 import { messageOf } from '../../lib/useLoad'
+import { ThemeToggle } from '../../components/ThemeToggle'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -27,6 +28,7 @@ export function LoginPage() {
 
   return (
     <div className="auth-wrap">
+      <ThemeToggle className="auth-theme" />
       <form className="auth-card" onSubmit={submit}>
         <span className="wordmark">handoff</span>
         <div>
@@ -79,6 +81,7 @@ export function RegisterPage() {
 
   return (
     <div className="auth-wrap">
+      <ThemeToggle className="auth-theme" />
       <form className="auth-card" onSubmit={submit}>
         <span className="wordmark">handoff</span>
         <div>

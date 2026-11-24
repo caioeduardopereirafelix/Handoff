@@ -63,6 +63,6 @@ export function linkStatus(links: PortalAccess[]): LinkStatus {
 
 export const linkToneColor: Record<LinkStatus['tone'], string> = {
   ok: 'var(--ink-soft)',
-  warning: '#8a5a00',
-  missing: 'var(--danger)',
+  warning: 'var(--warning-text)',
+  missing: 'var(--danger-text)',
 }

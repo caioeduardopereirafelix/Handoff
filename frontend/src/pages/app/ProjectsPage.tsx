@@ -63,9 +63,9 @@ function ProjectCard({ summary }: { summary: ProjectSummary }) {
         {project.status === 'ARCHIVED' && <span style={{ fontSize: 14, color: 'var(--muted)' }}>arquivado</span>}
       </span>
       <span className="turn-strip" aria-hidden="true">
-        {mine > 0 && <span style={{ flex: mine, background: 'var(--signal)' }} />}
-        {theirs > 0 && <span style={{ flex: theirs, background: 'var(--ink)' }} />}
-        {done > 0 && <span style={{ flex: done, background: '#9cb8ac' }} />}
+        {mine > 0 && <span style={{ flex: mine, background: 'var(--warning)' }} />}
+        {theirs > 0 && <span style={{ flex: theirs, background: 'var(--info)' }} />}
+        {done > 0 && <span style={{ flex: done, background: 'var(--success)' }} />}
       </span>
       <span style={{ fontSize: 15, fontWeight: 600 }}>
         {empty ? 'Nenhuma solicitação ainda' : turnSummary(summary)}
