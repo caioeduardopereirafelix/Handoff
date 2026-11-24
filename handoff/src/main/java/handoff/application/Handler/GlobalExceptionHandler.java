@@ -9,6 +9,7 @@ import handoff.application.Exception.InvalidCredentialsException;
 import handoff.application.Exception.InvalidRefreshTokenException;
 import handoff.application.Exception.ForbiddenTransitionException;
 import handoff.application.Exception.InvalidTransitionException;
+import handoff.application.Exception.TooManyRequestsException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
@@ -68,6 +69,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({InvalidCredentialsException.class, InvalidRefreshTokenException.class})
     public ProblemDetail handleUnauthorized(RuntimeException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ProblemDetail> handleTooManyRequests(TooManyRequestsException e) {
+        long seconds = Math.max(1, (long) Math.ceil(e.getRetryAfter().toMillis() / 1000.0));
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(seconds))
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage()));
     }
 
     @Override

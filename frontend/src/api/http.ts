@@ -94,7 +94,8 @@ async function refresh(): Promise<boolean> {
         session.store(tokens)
         return true
       })
-      .catch(() => {
+      .catch((error) => {
+        if (error instanceof ApiError && error.status === 429) throw error
         session.clear()
         return false
       })

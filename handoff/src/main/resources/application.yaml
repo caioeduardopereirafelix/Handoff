@@ -1,3 +1,6 @@
+server:
+  forward-headers-strategy: native
+
 spring:
   main:
     banner-mode: off
@@ -60,6 +63,21 @@ storage:
   fallback-secret-key: ${MINIO_ROOT_PASSWORD:}
   max-size-bytes: 10485760
   url-expiration: 5m
+
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  login-per-ip:
+    requests: 20
+    period: 1m
+  login-per-email:
+    requests: 5
+    period: 1m
+  register-per-ip:
+    requests: 10
+    period: 1h
+  refresh-per-ip:
+    requests: 30
+    period: 1m
 
 jwt:
   # Obrigatório, sem valor padrão: defina HANDOFF_JWT_SECRET (mínimo de 32 caracteres).
