@@ -25,6 +25,22 @@ public class TenantContext {
         return Optional.empty();
     }
 
+    public Optional<AppUser> findCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof AppUser user) {
+            return Optional.of(user);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<PortalPrincipal> findPortalPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof PortalPrincipal portal) {
+            return Optional.of(portal);
+        }
+        return Optional.empty();
+    }
+
     public UUID getOrganizationId() {
         return findOrganizationId()
                 .orElseThrow(() -> new IllegalStateException("Nenhuma organização autenticada na requisição"));

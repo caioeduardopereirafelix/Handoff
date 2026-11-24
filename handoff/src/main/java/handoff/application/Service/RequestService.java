@@ -5,6 +5,7 @@ import handoff.application.Dto.AssignRequestDto;
 import handoff.application.Dto.CreateRequestDto;
 import handoff.application.Dto.PortalProjectDto;
 import handoff.application.Dto.RequestResponseDto;
+import handoff.application.Entity.ActivityAction;
 import handoff.application.Entity.ActorType;
 import handoff.application.Entity.AppUser;
 import handoff.application.Entity.Project;
@@ -31,6 +32,7 @@ public class RequestService {
     private final AppUserRepository userRepository;
     private final ProjectService projectService;
     private final TenantContext tenantContext;
+    private final ActivityLogService activityLogService;
 
     @Transactional(readOnly = true)
     public List<RequestResponseDto> listForProject(UUID projectId) {
@@ -66,20 +68,26 @@ public class RequestService {
         request.setDescription(dto.description() == null || dto.description().isBlank() ? null : dto.description().trim());
         request.setPriority(dto.priority() == null ? RequestPriority.MEDIUM : dto.priority());
         request.setCreatedByType(actor);
-        return RequestResponseDto.from(requestRepository.saveAndFlush(request));
+        Request saved = requestRepository.saveAndFlush(request);
+        activityLogService.record(saved, ActivityAction.REQUEST_CREATED, null, RequestStatus.OPEN);
+        return RequestResponseDto.from(saved);
     }
 
     @Transactional
     public RequestResponseDto changeStatus(UUID id, RequestStatus target) {
         Request request = find(id);
+        RequestStatus from = request.getStatus();
         request.transitionTo(target, ActorType.USER);
+        activityLogService.record(request, ActivityAction.STATUS_CHANGED, from, target);
         return RequestResponseDto.from(requestRepository.saveAndFlush(request));
     }
 
     @Transactional
     public RequestResponseDto changeStatusInProject(UUID projectId, UUID id, RequestStatus target) {
         Request request = findInProject(projectId, id);
+        RequestStatus from = request.getStatus();
         request.transitionTo(target, ActorType.CLIENT);
+        activityLogService.record(request, ActivityAction.STATUS_CHANGED, from, target);
         return RequestResponseDto.from(requestRepository.saveAndFlush(request));
     }
 
@@ -92,6 +100,7 @@ public class RequestService {
                         .orElseThrow(() -> new ResourceNotFoundException("Responsável"));
         request.setAssignee(assignee);
         request.setDueDate(dto.dueDate());
+        activityLogService.record(request, ActivityAction.ASSIGNMENT_CHANGED);
         return RequestResponseDto.from(requestRepository.saveAndFlush(request));
     }
 
