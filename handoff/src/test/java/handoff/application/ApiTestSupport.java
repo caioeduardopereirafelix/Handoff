@@ -71,6 +71,31 @@ public abstract class ApiTestSupport {
         return JsonPath.read(body, "$.id");
     }
 
+    protected String createPortalLink(String auth, String projectId) throws Exception {
+        String body = postJson(auth, "/api/app/projects/" + projectId + "/portal-access", "{}")
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.token");
+    }
+
+    protected String createRequest(String auth, String projectId, String title) throws Exception {
+        String body = postJson(auth, "/api/app/projects/" + projectId + "/requests", """
+                {"title":"%s"}
+                """.formatted(title))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.id");
+    }
+
+    protected ResultActions portalGet(String token, String path) throws Exception {
+        return mvc.perform(get("/api/portal/" + token + path));
+    }
+
+    protected ResultActions portalPost(String token, String path, String json) throws Exception {
+        return mvc.perform(post("/api/portal/" + token + path)
+                .contentType(MediaType.APPLICATION_JSON).content(json));
+    }
+
     protected ResultActions getJson(String auth, String url) throws Exception {
         return mvc.perform(get(url).header("Authorization", auth));
     }
