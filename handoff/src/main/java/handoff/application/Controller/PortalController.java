@@ -2,6 +2,10 @@ package handoff.application.Controller;
 
 import handoff.application.Config.PortalPrincipal;
 import handoff.application.Dto.ActivityLogResponseDto;
+import handoff.application.Dto.AttachmentResponseDto;
+import handoff.application.Dto.DownloadUrlResponseDto;
+import handoff.application.Dto.RequestUploadDto;
+import handoff.application.Dto.UploadUrlResponseDto;
 import handoff.application.Dto.CommentResponseDto;
 import handoff.application.Dto.CreateCommentDto;
 import handoff.application.Dto.CreateRequestDto;
@@ -10,6 +14,7 @@ import handoff.application.Dto.RequestResponseDto;
 import handoff.application.Entity.ActorType;
 import handoff.application.Entity.RequestStatus;
 import handoff.application.Service.ActivityLogService;
+import handoff.application.Service.AttachmentService;
 import handoff.application.Service.CommentService;
 import handoff.application.Service.RequestService;
 import jakarta.validation.Valid;
@@ -29,6 +34,7 @@ public class PortalController {
     private final RequestService requestService;
     private final CommentService commentService;
     private final ActivityLogService activityLogService;
+    private final AttachmentService attachmentService;
 
     @GetMapping("/project")
     public PortalProjectDto project(@AuthenticationPrincipal PortalPrincipal portal) {
@@ -55,6 +61,33 @@ public class PortalController {
     @GetMapping("/requests/{id}/activity")
     public List<ActivityLogResponseDto> activity(@AuthenticationPrincipal PortalPrincipal portal, @PathVariable UUID id) {
         return activityLogService.listInProject(portal.projectId(), id);
+    }
+
+    @PostMapping("/requests/{id}/attachments/upload-url")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UploadUrlResponseDto requestUpload(@AuthenticationPrincipal PortalPrincipal portal,
+                                              @PathVariable UUID id,
+                                              @RequestBody @Valid RequestUploadDto request) {
+        return attachmentService.requestUploadInProject(portal.projectId(), id, request);
+    }
+
+    @PostMapping("/requests/{id}/attachments/{attachmentId}/complete")
+    public AttachmentResponseDto completeUpload(@AuthenticationPrincipal PortalPrincipal portal,
+                                                @PathVariable UUID id,
+                                                @PathVariable UUID attachmentId) {
+        return attachmentService.completeInProject(portal.projectId(), id, attachmentId);
+    }
+
+    @GetMapping("/requests/{id}/attachments")
+    public List<AttachmentResponseDto> attachments(@AuthenticationPrincipal PortalPrincipal portal, @PathVariable UUID id) {
+        return attachmentService.listInProject(portal.projectId(), id);
+    }
+
+    @GetMapping("/requests/{id}/attachments/{attachmentId}/download-url")
+    public DownloadUrlResponseDto downloadUrl(@AuthenticationPrincipal PortalPrincipal portal,
+                                              @PathVariable UUID id,
+                                              @PathVariable UUID attachmentId) {
+        return attachmentService.downloadUrlInProject(portal.projectId(), id, attachmentId);
     }
 
     @GetMapping("/requests/{id}/comments")
