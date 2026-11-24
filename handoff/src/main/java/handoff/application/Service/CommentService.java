@@ -4,6 +4,7 @@ import handoff.application.Config.PortalPrincipal;
 import handoff.application.Config.TenantContext;
 import handoff.application.Dto.CommentResponseDto;
 import handoff.application.Dto.CreateCommentDto;
+import handoff.application.Entity.ActivityAction;
 import handoff.application.Entity.ActorType;
 import handoff.application.Entity.AppUser;
 import handoff.application.Entity.Comment;
@@ -25,6 +26,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final RequestRepository requestRepository;
     private final TenantContext tenantContext;
+    private final ActivityLogService activityLogService;
 
     @Transactional(readOnly = true)
     public List<CommentResponseDto> list(UUID requestId) {
@@ -69,6 +71,7 @@ public class CommentService {
 
     private CommentResponseDto save(Comment comment) {
         Comment saved = commentRepository.saveAndFlush(comment);
+        activityLogService.record(saved.getRequest(), ActivityAction.COMMENT_ADDED);
         return CommentResponseDto.from(saved, clientNameOf(saved.getRequest()));
     }
 

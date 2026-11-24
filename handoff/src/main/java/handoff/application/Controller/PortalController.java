@@ -1,6 +1,7 @@
 package handoff.application.Controller;
 
 import handoff.application.Config.PortalPrincipal;
+import handoff.application.Dto.ActivityLogResponseDto;
 import handoff.application.Dto.CommentResponseDto;
 import handoff.application.Dto.CreateCommentDto;
 import handoff.application.Dto.CreateRequestDto;
@@ -8,6 +9,7 @@ import handoff.application.Dto.PortalProjectDto;
 import handoff.application.Dto.RequestResponseDto;
 import handoff.application.Entity.ActorType;
 import handoff.application.Entity.RequestStatus;
+import handoff.application.Service.ActivityLogService;
 import handoff.application.Service.CommentService;
 import handoff.application.Service.RequestService;
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ public class PortalController {
 
     private final RequestService requestService;
     private final CommentService commentService;
+    private final ActivityLogService activityLogService;
 
     @GetMapping("/project")
     public PortalProjectDto project(@AuthenticationPrincipal PortalPrincipal portal) {
@@ -47,6 +50,11 @@ public class PortalController {
     @GetMapping("/requests/{id}")
     public RequestResponseDto get(@AuthenticationPrincipal PortalPrincipal portal, @PathVariable UUID id) {
         return requestService.getInProject(portal.projectId(), id);
+    }
+
+    @GetMapping("/requests/{id}/activity")
+    public List<ActivityLogResponseDto> activity(@AuthenticationPrincipal PortalPrincipal portal, @PathVariable UUID id) {
+        return activityLogService.listInProject(portal.projectId(), id);
     }
 
     @GetMapping("/requests/{id}/comments")
