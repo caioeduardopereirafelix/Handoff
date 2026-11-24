@@ -53,11 +53,13 @@ export function AppLayout() {
             </NavLink>
             <NavLink to="/app/projetos" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>Projetos</NavLink>
           </div>
-          <div className="nav-user" style={{ marginTop: 'auto', padding: '0 12px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <span className="avatar">{initials}</span>
-            <span style={{ fontSize: 14, color: 'var(--nav-text)' }}>{me.data.name}</span>
+          <div className="nav-user" style={{ marginTop: 'auto', padding: '0 12px', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="avatar">{initials}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: 'var(--nav-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{me.data.name}</span>
+              <button type="button" onClick={logout} style={{ background: 'none', border: 0, color: 'var(--nav-muted)', fontSize: 14, textDecoration: 'underline', cursor: 'pointer', minHeight: 44, whiteSpace: 'nowrap' }}>Sair</button>
+            </div>
             <ThemeToggle />
-            <button type="button" onClick={logout} style={{ background: 'none', border: 0, color: 'var(--nav-muted)', fontSize: 14, textDecoration: 'underline', cursor: 'pointer', minHeight: 44 }}>Sair</button>
           </div>
         </nav>
         <main className="app-main">
