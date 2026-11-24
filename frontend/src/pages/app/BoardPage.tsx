@@ -59,8 +59,8 @@ export function BoardPage() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'flex-start' }}>
         <h1 style={{ fontSize: 48, lineHeight: 1, fontWeight: 800, letterSpacing: '-0.035em' }}>Comece pelo primeiro cliente</h1>
-        <p style={{ fontSize: 17, color: 'var(--ink-soft)', maxWidth: '56ch' }}>Cadastre um cliente e um projeto. Depois gere o link do portal para ele abrir as solicitações.</p>
-        <Link to="/app/projetos" className="btn btn-primary">Cadastrar cliente e projeto</Link>
+        <p style={{ fontSize: 17, color: 'var(--ink-soft)', maxWidth: '56ch' }}>Crie o primeiro projeto. Você cadastra o cliente no mesmo passo e manda o link do portal para ele.</p>
+        <Link to="/app/projetos/novo" className="btn btn-primary">Criar o primeiro projeto</Link>
       </div>
     )
   }

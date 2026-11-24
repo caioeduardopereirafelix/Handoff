@@ -66,7 +66,7 @@ export function RegisterPage() {
     setFieldErrors({})
     try {
       await auth.register(form)
-      navigate('/app/projetos')
+      navigate('/app/projetos/novo')
     } catch (reason) {
       setError(messageOf(reason))
       if (reason instanceof ApiError) setFieldErrors(reason.fieldErrors)

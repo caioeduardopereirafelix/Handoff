@@ -50,7 +50,7 @@ export function AppLayout() {
             <NavLink to="/app" end className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
               Solicitações {yourTurnCount > 0 && <span className="nav-count">{yourTurnCount}</span>}
             </NavLink>
-            <NavLink to="/app/projetos" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>Projetos e clientes</NavLink>
+            <NavLink to="/app/projetos" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>Projetos</NavLink>
           </div>
           <div className="nav-user" style={{ marginTop: 'auto', padding: '0 12px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--signal)', color: 'var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800 }}>{initials}</span>

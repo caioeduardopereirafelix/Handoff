@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { app } from '../../api/api'
 import { BackIcon } from '../../components/Icons'
 import { RequestForm } from '../../components/RequestForm'
@@ -7,8 +7,9 @@ import { useLoad } from '../../lib/useLoad'
 
 export function NewRequestPage() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const projects = useLoad(() => app.projects(), [])
-  const [projectId, setProjectId] = useState('')
+  const [projectId, setProjectId] = useState(params.get('projeto') ?? '')
   const active = (projects.data ?? []).filter((p) => p.status === 'ACTIVE')
 
   return (
@@ -19,7 +20,7 @@ export function NewRequestPage() {
       <h1 style={{ fontSize: 'clamp(34px, 4.4vw, 48px)', lineHeight: 1, fontWeight: 800, letterSpacing: '-0.035em' }}>Nova solicitação</h1>
       {projects.error && <p className="error-box" role="alert">{projects.error.message}</p>}
       {projects.data && active.length === 0 && (
-        <p className="empty">Nenhum projeto ativo. <Link to="/app/projetos">Crie um projeto</Link> antes de abrir solicitações.</p>
+        <p className="empty">Nenhum projeto ativo. <Link to="/app/projetos/novo">Crie um projeto</Link> antes de abrir solicitações.</p>
       )}
       {active.length > 0 && (
         <RequestForm
