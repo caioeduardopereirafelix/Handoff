@@ -49,9 +49,9 @@ export function PortalHomePage() {
       {total > 0 && (
         <section aria-label="Onde estão as solicitações" style={{ marginTop: 48 }}>
           <div className="split-bar">
-            {mine.length > 0 && <div style={{ flex: mine.length, background: 'var(--signal)' }}><strong>{mine.length}</strong><span>com você</span></div>}
-            {team.length > 0 && <div style={{ flex: team.length, background: 'var(--ink)', color: '#fff' }}><strong>{team.length}</strong><span>com a equipe</span></div>}
-            {done.length > 0 && <div style={{ flex: done.length, background: 'var(--pine-soft)', color: 'var(--pine)' }}><strong>{done.length}</strong><span>{done.length === 1 ? 'concluída' : 'concluídas'}</span></div>}
+            {mine.length > 0 && <div className="split-yours" style={{ flex: mine.length }}><strong>{mine.length}</strong><span>com você</span></div>}
+            {team.length > 0 && <div className="split-team" style={{ flex: team.length }}><strong>{team.length}</strong><span>com a equipe</span></div>}
+            {done.length > 0 && <div className="split-done" style={{ flex: done.length }}><strong>{done.length}</strong><span>{done.length === 1 ? 'concluída' : 'concluídas'}</span></div>}
           </div>
         </section>
       )}

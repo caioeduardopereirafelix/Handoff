@@ -267,7 +267,7 @@ function Wizard({ clients, preselectedId }: { clients: Client[]; preselectedId: 
 
 function Choice({ checked, onChange, title, text }: { checked: boolean; onChange: () => void; title: string; text: string }) {
   return (
-    <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: 16, borderRadius: 14, border: `2px solid ${checked ? 'var(--ink)' : 'var(--line-strong)'}`, background: checked ? 'var(--surface-soft)' : 'var(--surface)', cursor: 'pointer' }}>
+    <label className={`choice${checked ? ' is-checked' : ''}`}>
       <input type="radio" name="link" checked={checked} onChange={onChange} style={{ width: 20, height: 20, margin: '2px 0 0' }} />
       <span>
         <span style={{ display: 'block', fontSize: 16, fontWeight: 700 }}>{title}</span>

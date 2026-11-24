@@ -3,6 +3,7 @@ import { Link, Outlet, useParams } from 'react-router-dom'
 import { portal } from '../../api/api'
 import type { PortalProject } from '../../api/types'
 import { useLoad } from '../../lib/useLoad'
+import { ThemeToggle } from '../../components/ThemeToggle'
 
 interface PortalContextValue {
   token: string
@@ -51,7 +52,10 @@ export function PortalLayout() {
             <span style={{ fontSize: 15, fontWeight: 600 }}>{project.data.clientName}</span>
             <span style={{ fontSize: 15, color: 'var(--muted)' }}>{project.data.projectName}</span>
           </div>
-          <p style={{ fontSize: 14, color: 'var(--muted)' }}>Você entrou pelo link do portal. Não compartilhe este link.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+            <p style={{ fontSize: 14, color: 'var(--muted)' }}>Você entrou pelo link do portal. Não compartilhe este link.</p>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <Outlet />
