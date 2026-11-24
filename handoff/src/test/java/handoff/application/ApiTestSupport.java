@@ -21,7 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // classes), Postgres no Testcontainers e atalhos para chamar a API autenticado.
 @SpringBootTest(properties = {
         "jwt.key=${random.uuid}${random.uuid}",
-        "spring.datasource.password=test"
+        "spring.datasource.password=test",
+        "rate-limit.login-per-ip.requests=10000",
+        "rate-limit.register-per-ip.requests=10000",
+        "rate-limit.refresh-per-ip.requests=10000"
 })
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
