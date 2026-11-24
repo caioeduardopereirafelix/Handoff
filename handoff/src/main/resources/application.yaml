@@ -25,6 +25,15 @@ spring:
     hibernate:
       ddl-auto: validate
 
+storage:
+  endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
+  region: ${STORAGE_REGION:us-east-1}
+  bucket: ${STORAGE_BUCKET:handoff}
+  access-key: ${STORAGE_ACCESS_KEY:${MINIO_ROOT_USER:}}
+  secret-key: ${STORAGE_SECRET_KEY:${MINIO_ROOT_PASSWORD:}}
+  max-size-bytes: 10485760
+  url-expiration: 5m
+
 jwt:
   # Obrigatório, sem valor padrão: defina HANDOFF_JWT_SECRET (mínimo de 32 caracteres).
   key: ${HANDOFF_JWT_SECRET}

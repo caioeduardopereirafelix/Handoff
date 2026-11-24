@@ -1,6 +1,8 @@
 package handoff.application.Handler;
 
+import handoff.application.Exception.AttachmentNotUploadedException;
 import handoff.application.Exception.ClientHasProjectsException;
+import handoff.application.Exception.InvalidAttachmentException;
 import handoff.application.Exception.EmailAlreadyUsedException;
 import handoff.application.Exception.ResourceNotFoundException;
 import handoff.application.Exception.InvalidCredentialsException;
@@ -46,6 +48,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 ? "A solicitação foi alterada por outra pessoa; recarregue e tente de novo"
                 : e.getMessage();
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
+    }
+
+    @ExceptionHandler(InvalidAttachmentException.class)
+    public ProblemDetail handleInvalidAttachment(InvalidAttachmentException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(AttachmentNotUploadedException.class)
+    public ProblemDetail handleAttachmentNotUploaded(AttachmentNotUploadedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
     @ExceptionHandler(ForbiddenTransitionException.class)
