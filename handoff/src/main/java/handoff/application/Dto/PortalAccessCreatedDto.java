@@ -7,6 +7,7 @@ public record PortalAccessCreatedDto(
         UUID id,
         String token,
         String portalPath,
-        Instant expiresAt
+        Instant expiresAt,
+        boolean emailSent
 ) {
 }

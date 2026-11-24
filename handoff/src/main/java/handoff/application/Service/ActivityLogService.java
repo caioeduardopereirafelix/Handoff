@@ -12,7 +12,9 @@ import handoff.application.Entity.RequestStatus;
 import handoff.application.Exception.ResourceNotFoundException;
 import handoff.application.Repository.ActivityLogRepository;
 import handoff.application.Repository.RequestRepository;
+import handoff.application.Notification.ActivityRecordedEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class ActivityLogService {
     private final ActivityLogRepository activityLogRepository;
     private final RequestRepository requestRepository;
     private final TenantContext tenantContext;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(propagation = Propagation.MANDATORY)
     public void record(Request request, ActivityAction action) {
@@ -53,6 +56,8 @@ public class ActivityLogService {
             log.setActorUser(user);
         }
         activityLogRepository.save(log);
+        eventPublisher.publishEvent(new ActivityRecordedEvent(request.getId(), action, log.getActorType(),
+                log.getActorUser() == null ? null : log.getActorUser().getId(), from, to));
     }
 
     @Transactional(readOnly = true)
