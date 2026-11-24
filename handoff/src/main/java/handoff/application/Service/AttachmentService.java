@@ -23,7 +23,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
@@ -34,6 +37,8 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -163,6 +168,10 @@ public class AttachmentService {
         if (head.contentLength() == null || head.contentLength() != attachment.getSizeBytes()) {
             throw new AttachmentNotUploadedException();
         }
+        if (!FileSignature.matches(attachment.getContentType(), readHead(attachment.getStorageKey()))) {
+            deleteObject(attachment.getStorageKey());
+            throw new InvalidAttachmentException("O conteúdo do arquivo não corresponde ao tipo informado");
+        }
 
         attachment.setStatus(AttachmentStatus.READY);
         attachment.setCompletedAt(clock.instant());
@@ -198,6 +207,26 @@ public class AttachmentService {
                 .getObjectRequest(getObject)
                 .build());
         return new DownloadUrlResponseDto(presigned.url().toString(), presigned.expiration());
+    }
+
+    private byte[] readHead(String key) {
+        GetObjectRequest request = GetObjectRequest.builder()
+                .bucket(storageProperties.bucket())
+                .key(key)
+                .range("bytes=0-" + (FileSignature.BYTES_TO_READ - 1))
+                .build();
+        try (ResponseInputStream<GetObjectResponse> stream = s3Client.getObject(request)) {
+            return stream.readNBytes(FileSignature.BYTES_TO_READ);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private void deleteObject(String key) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(storageProperties.bucket())
+                .key(key)
+                .build());
     }
 
     private Optional<HeadObjectResponse> headObject(String key) {

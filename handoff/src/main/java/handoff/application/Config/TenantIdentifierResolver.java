@@ -15,12 +15,14 @@ import java.util.UUID;
 public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver<UUID>, HibernatePropertiesCustomizer {
 
     static final UUID ROOT = new UUID(0, 0);
+    static final UUID NO_TENANT = new UUID(0, 1);
 
     private final TenantContext tenantContext;
 
     @Override
     public UUID resolveCurrentTenantIdentifier() {
-        return tenantContext.findOrganizationId().orElse(ROOT);
+        return tenantContext.findOrganizationId()
+                .orElseGet(() -> tenantContext.isAcrossTenants() ? ROOT : NO_TENANT);
     }
 
     @Override

@@ -39,7 +39,7 @@ class AttachmentTests extends ApiTestSupport {
 
     @Test
     void developerUploadsAndClientDownloadsTheSameFile() throws Exception {
-        byte[] content = "conteudo do layout".getBytes(StandardCharsets.UTF_8);
+        byte[] content = "%PDF-1.7 conteudo do layout".getBytes(StandardCharsets.UTF_8);
         String uploadBody = postJson(auth, base() + "/upload-url", """
                 {"fileName":"C:\\\\Users\\\\caio\\\\layout final.pdf","contentType":"application/pdf","sizeBytes":%d}
                 """.formatted(content.length))
@@ -77,7 +77,7 @@ class AttachmentTests extends ApiTestSupport {
 
     @Test
     void clientUploadsThroughThePortalAndItIsRecordedInTheHistory() throws Exception {
-        byte[] content = new byte[]{(byte) 0x89, 'P', 'N', 'G', 1, 2, 3};
+        byte[] content = new byte[]{(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3};
         String uploadBody = portalPost(token, "/requests/" + requestId + "/attachments/upload-url", """
                 {"fileName":"fachada.png","contentType":"image/png","sizeBytes":%d}
                 """.formatted(content.length))
@@ -103,7 +103,7 @@ class AttachmentTests extends ApiTestSupport {
                 {"body":"Segue o layout"}
                 """).andReturn().getResponse().getContentAsString();
         String commentId = JsonPath.read(commentBody, "$.id");
-        byte[] content = "pdf".getBytes(StandardCharsets.UTF_8);
+        byte[] content = "%PDF-1.7".getBytes(StandardCharsets.UTF_8);
 
         String uploadBody = postJson(auth, base() + "/upload-url", """
                 {"fileName":"layout.pdf","contentType":"application/pdf","sizeBytes":%d,"commentId":"%s"}
@@ -151,6 +151,25 @@ class AttachmentTests extends ApiTestSupport {
                 .isEqualTo(403);
         assertThat(put(uploadBody, "12345".getBytes(StandardCharsets.UTF_8), "image/png"))
                 .isEqualTo(403);
+    }
+
+    @Test
+    void fileWhoseContentDoesNotMatchTheDeclaredTypeIsRejectedAndDeleted() throws Exception {
+        byte[] content = "<html><script>alert(1)</script></html>".getBytes(StandardCharsets.UTF_8);
+        String uploadBody = postJson(auth, base() + "/upload-url", """
+                {"fileName":"foto.png","contentType":"image/png","sizeBytes":%d}
+                """.formatted(content.length))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(put(uploadBody, content, "image/png")).isEqualTo(200);
+
+        String attachmentId = JsonPath.read(uploadBody, "$.attachmentId");
+        postJson(auth, base() + "/" + attachmentId + "/complete", "")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail", is("O conteúdo do arquivo não corresponde ao tipo informado")));
+        postJson(auth, base() + "/" + attachmentId + "/complete", "")
+                .andExpect(status().isConflict());
+        getJson(auth, base()).andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
