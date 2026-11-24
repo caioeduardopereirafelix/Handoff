@@ -64,6 +64,6 @@ public class StorageConfiguration {
 
     private static StaticCredentialsProvider credentials(StorageProperties properties) {
         return StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(properties.accessKey(), properties.secretKey()));
+                AwsBasicCredentials.create(properties.effectiveAccessKey(), properties.effectiveSecretKey()));
     }
 }
