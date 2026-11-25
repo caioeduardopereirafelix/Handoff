@@ -1,9 +1,12 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { allPages } from '../../api/api'
 import type { ServiceRequest } from '../../api/types'
 import { CheckIcon, PlusIcon } from '../../components/Icons'
-import { byNewest, relativeDay, shortDate, statusLabel, turnOf } from '../../lib/requests'
+import { ACTIVE_STATUSES, byNewest, FINISHED_STATUSES, relativeDay, shortDate, statusLabel, turnOf } from '../../lib/requests'
 import { useLoad } from '../../lib/useLoad'
+import { usePagedList } from '../../lib/usePagedList'
+
+const FINISHED_PAGE_SIZE = 5
 import { usePortal } from './PortalLayout'
 
 const words = ['Nenhuma', 'Uma', 'Duas', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete', 'Oito', 'Nove']
@@ -17,8 +20,8 @@ function headline(waiting: number, withTeam: number): string {
 
 export function PortalHomePage() {
   const { token, api } = usePortal()
-  const requests = useLoad(() => api.requests(), [token])
-  const [showAllDone, setShowAllDone] = useState(false)
+  const requests = useLoad(() => allPages(api.requests, { status: ACTIVE_STATUSES }), [token])
+  const finished = usePagedList((page) => api.requests({ status: FINISHED_STATUSES, page, size: FINISHED_PAGE_SIZE }), [token])
 
   if (requests.loading && !requests.data) return <p className="container" style={{ paddingTop: 40, color: 'var(--muted)' }}>Carregando…</p>
   if (requests.error) return <p className="container error-box" style={{ marginTop: 40 }}>{requests.error.message}</p>
@@ -26,9 +29,8 @@ export function PortalHomePage() {
   const all = [...(requests.data ?? [])].sort(byNewest)
   const mine = all.filter((r) => turnOf(r.status) === 'client')
   const team = all.filter((r) => turnOf(r.status) === 'team')
-  const done = all.filter((r) => turnOf(r.status) === 'done')
-  const doneShown = showAllDone ? done : done.slice(0, 3)
-  const total = mine.length + team.length + done.length
+  const doneCount = finished.total
+  const total = mine.length + team.length + doneCount
 
   return (
     <main className="container" style={{ paddingTop: 56, paddingBottom: 80 }}>
@@ -51,7 +53,7 @@ export function PortalHomePage() {
           <div className="split-bar">
             {mine.length > 0 && <div className="split-yours" style={{ flex: mine.length }}><strong>{mine.length}</strong><span>com você</span></div>}
             {team.length > 0 && <div className="split-team" style={{ flex: team.length }}><strong>{team.length}</strong><span>com a equipe</span></div>}
-            {done.length > 0 && <div className="split-done" style={{ flex: done.length }}><strong>{done.length}</strong><span>{done.length === 1 ? 'concluída' : 'concluídas'}</span></div>}
+            {doneCount > 0 && <div className="split-done" style={{ flex: doneCount }}><strong>{doneCount}</strong><span>{doneCount === 1 ? 'concluída' : 'concluídas'}</span></div>}
           </div>
         </section>
       )}
@@ -78,18 +80,18 @@ export function PortalHomePage() {
         )}
       </section>
 
-      {done.length > 0 && (
+      {finished.items.length > 0 && (
         <section style={{ marginTop: 48 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
             <h2 className="section-title">Concluídas</h2>
-            {done.length > 3 && (
-              <button type="button" onClick={() => setShowAllDone(!showAllDone)} style={{ background: 'none', border: 0, fontSize: 15, fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', minHeight: 44 }}>
-                {showAllDone ? 'Mostrar só as recentes' : `Ver as ${done.length} concluídas`}
+            {finished.hasMore && (
+              <button type="button" onClick={finished.loadMore} disabled={finished.loading} style={{ background: 'none', border: 0, fontSize: 15, fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', minHeight: 44 }}>
+                {finished.loading ? 'Carregando…' : `Ver mais concluídas (${finished.items.length} de ${doneCount})`}
               </button>
             )}
           </div>
           <div className="panel" style={{ padding: '6px 24px' }}>
-            {doneShown.map((r) => (
+            {finished.items.map((r) => (
               <Link key={r.id} to={`/portal/${token}/solicitacoes/${r.id}`} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 20, padding: '16px 0', borderBottom: '1px solid var(--line-soft)', textDecoration: 'none' }}>
                 <span style={{ fontSize: 17, fontWeight: 700, minWidth: 72, color: 'var(--muted-code)' }}>{r.code}</span>
                 <span style={{ flex: '1 1 320px', minWidth: 0, fontSize: 17 }}>{r.title}</span>

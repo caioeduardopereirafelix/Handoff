@@ -61,9 +61,9 @@ class TenantIsolationTests extends ApiTestSupport {
 
     @Test
     void organizationBListsNothingFromA() throws Exception {
-        getJson(authB, "/api/app/clients").andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
-        getJson(authB, "/api/app/projects").andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
-        getJson(authB, "/api/app/projects?clientId=" + clientOfA).andExpect(jsonPath("$", hasSize(0)));
+        getJson(authB, "/api/app/clients").andExpect(status().isOk()).andExpect(jsonPath("$.items", hasSize(0)));
+        getJson(authB, "/api/app/projects").andExpect(status().isOk()).andExpect(jsonPath("$.items", hasSize(0)));
+        getJson(authB, "/api/app/projects?clientId=" + clientOfA).andExpect(jsonPath("$.items", hasSize(0)));
     }
 
     @Test

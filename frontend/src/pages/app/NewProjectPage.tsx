@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { app } from '../../api/api'
+import { allPages, app } from '../../api/api'
 import type { Client, PortalAccessCreated, Project } from '../../api/types'
 import { BackIcon, PlusIcon } from '../../components/Icons'
 import { CreatedLink } from '../../components/PortalLinks'
@@ -13,7 +13,7 @@ const stepNames = ['Cliente', 'Projeto', 'Link do portal']
 
 export function NewProjectPage() {
   const [params] = useSearchParams()
-  const clients = useLoad(() => app.clients(), [])
+  const clients = useLoad(() => allPages(app.clients), [])
   if (clients.loading && !clients.data) return <p style={{ color: 'var(--muted)' }}>Carregando…</p>
   if (clients.error) return <p className="error-box" role="alert">{clients.error.message}</p>
   return <Wizard clients={clients.data ?? []} preselectedId={params.get('cliente')} />

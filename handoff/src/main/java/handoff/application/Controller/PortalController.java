@@ -9,6 +9,7 @@ import handoff.application.Dto.UploadUrlResponseDto;
 import handoff.application.Dto.CommentResponseDto;
 import handoff.application.Dto.CreateCommentDto;
 import handoff.application.Dto.CreateRequestDto;
+import handoff.application.Dto.PageResponseDto;
 import handoff.application.Dto.PortalProjectDto;
 import handoff.application.Dto.RequestResponseDto;
 import handoff.application.Entity.ActorType;
@@ -24,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -42,8 +44,11 @@ public class PortalController {
     }
 
     @GetMapping("/requests")
-    public List<RequestResponseDto> list(@AuthenticationPrincipal PortalPrincipal portal) {
-        return requestService.listForProject(portal.projectId());
+    public PageResponseDto<RequestResponseDto> list(@AuthenticationPrincipal PortalPrincipal portal,
+                                                    @RequestParam(required = false) Set<RequestStatus> status,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "50") int size) {
+        return requestService.listForProject(portal.projectId(), status, page, size);
     }
 
     @PostMapping("/requests")

@@ -1,10 +1,10 @@
-import { app } from '../api/api'
+import { allPages, app } from '../api/api'
 import type { Client, PortalAccess, Project, ServiceRequest } from '../api/types'
-import { relativeDay, turnOf } from './requests'
+import { ACTIVE_STATUSES, FINISHED_STATUSES, relativeDay, turnOf } from './requests'
 
 export interface ProjectSummary {
   project: Project
-  requests: ServiceRequest[]
+  active: ServiceRequest[]
   links: PortalAccess[]
   mine: number
   theirs: number
@@ -17,10 +17,14 @@ export interface ClientGroup {
 }
 
 export async function loadProjectSummaries(): Promise<ClientGroup[]> {
-  const [clients, projects] = await Promise.all([app.clients(), app.projects()])
+  const [clients, projects] = await Promise.all([allPages(app.clients), allPages(app.projects)])
   const summaries = await Promise.all(projects.map(async (project) => {
-    const [requests, links] = await Promise.all([app.projectRequests(project.id), app.portalLinks(project.id)])
-    return summarize(project, requests, links)
+    const [active, finished, links] = await Promise.all([
+      loadActiveRequests(project.id),
+      app.projectRequests(project.id, { status: FINISHED_STATUSES, size: 1 }),
+      app.portalLinks(project.id),
+    ])
+    return summarize(project, active, finished.totalItems, links)
   }))
   return clients.map((client) => ({
     client,
@@ -28,14 +32,18 @@ export async function loadProjectSummaries(): Promise<ClientGroup[]> {
   }))
 }
 
-export function summarize(project: Project, requests: ServiceRequest[], links: PortalAccess[]): ProjectSummary {
+export function loadActiveRequests(projectId: string): Promise<ServiceRequest[]> {
+  return allPages((query) => app.projectRequests(projectId, query), { status: ACTIVE_STATUSES })
+}
+
+export function summarize(project: Project, active: ServiceRequest[], done: number, links: PortalAccess[]): ProjectSummary {
   return {
     project,
-    requests,
+    active,
     links,
-    mine: requests.filter((r) => turnOf(r.status) === 'team').length,
-    theirs: requests.filter((r) => turnOf(r.status) === 'client').length,
-    done: requests.filter((r) => turnOf(r.status) === 'done').length,
+    mine: active.filter((r) => turnOf(r.status) === 'team').length,
+    theirs: active.filter((r) => turnOf(r.status) === 'client').length,
+    done,
   }
 }
 

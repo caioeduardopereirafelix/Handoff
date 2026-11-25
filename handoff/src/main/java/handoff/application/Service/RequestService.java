@@ -3,6 +3,7 @@ package handoff.application.Service;
 import handoff.application.Config.TenantContext;
 import handoff.application.Dto.AssignRequestDto;
 import handoff.application.Dto.CreateRequestDto;
+import handoff.application.Dto.PageResponseDto;
 import handoff.application.Dto.PortalProjectDto;
 import handoff.application.Dto.RequestResponseDto;
 import handoff.application.Entity.ActivityAction;
@@ -17,10 +18,13 @@ import handoff.application.Repository.AppUserRepository;
 import handoff.application.Repository.ProjectRepository;
 import handoff.application.Repository.RequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -35,13 +39,14 @@ public class RequestService {
     private final ActivityLogService activityLogService;
 
     @Transactional(readOnly = true)
-    public List<RequestResponseDto> listForProject(UUID projectId) {
+    public PageResponseDto<RequestResponseDto> listForProject(UUID projectId, Set<RequestStatus> statuses, int page, int size) {
         projectService.find(projectId);
-        return requestRepository
-                .findAllByOrganizationIdAndProjectIdOrderByNumberDesc(tenantContext.getOrganizationId(), projectId)
-                .stream()
-                .map(RequestResponseDto::from)
-                .toList();
+        UUID orgId = tenantContext.getOrganizationId();
+        Pageable pageable = Pagination.of(page, size, Sort.by(Sort.Direction.DESC, "number"));
+        Page<Request> requests = statuses == null || statuses.isEmpty()
+                ? requestRepository.findAllByOrganizationIdAndProjectId(orgId, projectId, pageable)
+                : requestRepository.findAllByOrganizationIdAndProjectIdAndStatusIn(orgId, projectId, statuses, pageable);
+        return PageResponseDto.from(requests, RequestResponseDto::from);
     }
 
     @Transactional(readOnly = true)

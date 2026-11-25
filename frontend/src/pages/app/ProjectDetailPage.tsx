@@ -3,30 +3,36 @@ import { app } from '../../api/api'
 import type { ServiceRequest } from '../../api/types'
 import { BackIcon, PlusIcon } from '../../components/Icons'
 import { PortalLinks } from '../../components/PortalLinks'
-import { linkStatus, linkToneColor, summarize, turnSummary } from '../../lib/projects'
-import { byNewest, relativeDay, shortDate, statusLabel, turnOf } from '../../lib/requests'
+import { linkStatus, linkToneColor, loadActiveRequests, summarize, turnSummary } from '../../lib/projects'
+import { byNewest, FINISHED_STATUSES, relativeDay, shortDate, statusLabel, turnOf } from '../../lib/requests'
 import { useLoad } from '../../lib/useLoad'
+import { usePagedList } from '../../lib/usePagedList'
+
+const FINISHED_PAGE_SIZE = 20
 
 export function ProjectDetailPage() {
   const { id = '' } = useParams()
   const data = useLoad(async () => {
-    const [project, requests, links, clients] = await Promise.all([
+    const [project, active, links] = await Promise.all([
       app.project(id),
-      app.projectRequests(id),
+      loadActiveRequests(id),
       app.portalLinks(id),
-      app.clients(),
     ])
-    return { summary: summarize(project, requests, links), client: clients.find((c) => c.id === project.clientId) ?? null }
+    const client = await app.client(project.clientId).catch(() => null)
+    return { project, active, links, client }
   }, [id])
+  const finished = usePagedList(
+    (page) => app.projectRequests(id, { status: FINISHED_STATUSES, page, size: FINISHED_PAGE_SIZE }),
+    [id],
+  )
 
   if (data.loading && !data.data) return <p style={{ color: 'var(--muted)' }}>Carregando projeto…</p>
   if (data.error) return <p className="error-box" role="alert">{data.error.message}</p>
-  const { summary, client } = data.data!
-  const { project, requests } = summary
-  const sorted = [...requests].sort(byNewest)
+  const { project, active, links, client } = data.data!
+  const summary = summarize(project, active, finished.total, links)
+  const sorted = [...active].sort(byNewest)
   const mine = sorted.filter((r) => turnOf(r.status) === 'team')
   const theirs = sorted.filter((r) => turnOf(r.status) === 'client')
-  const done = sorted.filter((r) => turnOf(r.status) === 'done')
   const status = linkStatus(summary.links)
 
   return (
@@ -40,7 +46,7 @@ export function ProjectDetailPage() {
           <p style={{ fontSize: 16, color: 'var(--muted)' }}>{project.clientName}</p>
           <h1 style={{ marginTop: 6, fontSize: 'clamp(34px, 4.4vw, 48px)', lineHeight: 1, fontWeight: 800, letterSpacing: '-0.035em' }}>{project.name}</h1>
           <p style={{ marginTop: 12, fontSize: 17, color: 'var(--ink-soft)' }}>
-            {requests.length === 0 ? 'Nenhuma solicitação ainda.' : turnSummary(summary)}
+            {active.length + finished.total === 0 ? 'Nenhuma solicitação ainda.' : turnSummary(summary)}
           </p>
         </div>
         <Link to={`/app/solicitacoes/nova?projeto=${project.id}`} className="btn btn-primary"><PlusIcon />Nova solicitação</Link>
@@ -50,7 +56,17 @@ export function ProjectDetailPage() {
         <div style={{ flex: '1 1 480px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 32 }}>
           <RequestGroup title="Sua vez" requests={mine} yours empty="Nada esperando a equipe neste projeto." />
           <RequestGroup title="Com o cliente" requests={theirs} yours={false} empty="Nenhuma entrega aguardando o cliente." />
-          {done.length > 0 && <RequestGroup title="Concluídas" requests={done} yours={false} empty="" />}
+          {finished.items.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
+              <RequestGroup title={`Concluídas (${finished.total})`} requests={finished.items} yours={false} empty="" />
+              {finished.hasMore && (
+                <button type="button" className="btn btn-quiet" onClick={finished.loadMore} disabled={finished.loading}>
+                  {finished.loading ? 'Carregando…' : `Carregar mais ${Math.min(FINISHED_PAGE_SIZE, finished.total - finished.items.length)}`}
+                </button>
+              )}
+            </div>
+          )}
+          {finished.error && <p className="error-box" role="alert">{finished.error.message}</p>}
         </div>
 
         <aside style={{ flex: '1 1 320px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>

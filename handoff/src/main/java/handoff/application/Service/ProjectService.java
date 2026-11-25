@@ -1,6 +1,7 @@
 package handoff.application.Service;
 
 import handoff.application.Config.TenantContext;
+import handoff.application.Dto.PageResponseDto;
 import handoff.application.Dto.ProjectRequestDto;
 import handoff.application.Dto.ProjectResponseDto;
 import handoff.application.Dto.ProjectUpdateDto;
@@ -8,10 +9,12 @@ import handoff.application.Entity.Project;
 import handoff.application.Exception.ResourceNotFoundException;
 import handoff.application.Repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,12 +26,13 @@ public class ProjectService {
     private final TenantContext tenantContext;
 
     @Transactional(readOnly = true)
-    public List<ProjectResponseDto> list(UUID clientId) {
+    public PageResponseDto<ProjectResponseDto> list(UUID clientId, int page, int size) {
         UUID orgId = tenantContext.getOrganizationId();
-        List<Project> projects = clientId == null
-                ? projectRepository.findAllByOrganizationIdOrderByNameAsc(orgId)
-                : projectRepository.findAllByOrganizationIdAndClientIdOrderByNameAsc(orgId, clientId);
-        return projects.stream().map(ProjectResponseDto::from).toList();
+        Pageable pageable = Pagination.of(page, size, Sort.by("name", "id"));
+        Page<Project> projects = clientId == null
+                ? projectRepository.findAllByOrganizationId(orgId, pageable)
+                : projectRepository.findAllByOrganizationIdAndClientId(orgId, clientId, pageable);
+        return PageResponseDto.from(projects, ProjectResponseDto::from);
     }
 
     @Transactional(readOnly = true)

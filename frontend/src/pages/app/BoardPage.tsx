@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { app } from '../../api/api'
+import { allPages, app } from '../../api/api'
 import type { Project, ServiceRequest } from '../../api/types'
 import { PlusIcon } from '../../components/Icons'
+import { loadActiveRequests } from '../../lib/projects'
 import { byNewest, relativeDay, turnOf } from '../../lib/requests'
 import { useLoad } from '../../lib/useLoad'
 import { useApp } from './AppLayout'
@@ -35,8 +36,8 @@ export function BoardPage() {
   const { setYourTurnCount } = useApp()
   const [projectFilter, setProjectFilter] = useState<string | null>(null)
   const board = useLoad(async () => {
-    const projects = (await app.projects()).filter((p) => p.status === 'ACTIVE')
-    const lists = await Promise.all(projects.map((p) => app.projectRequests(p.id)))
+    const projects = (await allPages(app.projects)).filter((p) => p.status === 'ACTIVE')
+    const lists = await Promise.all(projects.map((p) => loadActiveRequests(p.id)))
     const items: BoardItem[] = lists.flatMap((requests, i) => requests.map((request) => ({ request, project: projects[i] })))
     return { projects, items }
   }, [])
