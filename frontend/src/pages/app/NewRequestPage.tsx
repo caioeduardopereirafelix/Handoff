@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { app } from '../../api/api'
+import { allPages, app } from '../../api/api'
 import { BackIcon } from '../../components/Icons'
 import { RequestForm } from '../../components/RequestForm'
 import { useLoad } from '../../lib/useLoad'
@@ -8,7 +8,7 @@ import { useLoad } from '../../lib/useLoad'
 export function NewRequestPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const projects = useLoad(() => app.projects(), [])
+  const projects = useLoad(() => allPages(app.projects), [])
   const [projectId, setProjectId] = useState(params.get('projeto') ?? '')
   const active = (projects.data ?? []).filter((p) => p.status === 'ACTIVE')
 

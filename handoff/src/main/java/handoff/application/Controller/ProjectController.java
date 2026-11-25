@@ -1,5 +1,6 @@
 package handoff.application.Controller;
 
+import handoff.application.Dto.PageResponseDto;
 import handoff.application.Dto.ProjectRequestDto;
 import handoff.application.Dto.ProjectResponseDto;
 import handoff.application.Dto.ProjectUpdateDto;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,8 +21,10 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping
-    public List<ProjectResponseDto> list(@RequestParam(required = false) UUID clientId) {
-        return projectService.list(clientId);
+    public PageResponseDto<ProjectResponseDto> list(@RequestParam(required = false) UUID clientId,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "50") int size) {
+        return projectService.list(clientId, page, size);
     }
 
     @GetMapping("/{id}")

@@ -47,7 +47,7 @@ class ClientProjectControllerTests extends ApiTestSupport {
                 .andExpect(jsonPath("$.name", is("Padaria Central Ltda")))
                 .andExpect(jsonPath("$.contactName", is("Ana")));
 
-        getJson(auth, "/api/app/clients").andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)));
+        getJson(auth, "/api/app/clients").andExpect(status().isOk()).andExpect(jsonPath("$.items", hasSize(1)));
 
         deleteJson(auth, "/api/app/clients/" + clientId).andExpect(status().isNoContent());
         getJson(auth, "/api/app/clients/" + clientId).andExpect(status().isNotFound());
@@ -80,10 +80,10 @@ class ClientProjectControllerTests extends ApiTestSupport {
                 .andExpect(jsonPath("$.clientName", is("Cliente A")))
                 .andExpect(jsonPath("$.status", is("ACTIVE")));
 
-        getJson(auth, "/api/app/projects").andExpect(jsonPath("$", hasSize(2)));
+        getJson(auth, "/api/app/projects").andExpect(jsonPath("$.items", hasSize(2)));
         getJson(auth, "/api/app/projects?clientId=" + clientA)
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name", is("Site institucional")));
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].name", is("Site institucional")));
 
         putJson(auth, "/api/app/projects/" + siteId, """
                 {"name":"Site novo","status":"ARCHIVED"}

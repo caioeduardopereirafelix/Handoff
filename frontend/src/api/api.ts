@@ -5,6 +5,7 @@ import type {
   Client,
   Comment,
   Me,
+  Page,
   PortalAccess,
   PortalAccessCreated,
   PortalProject,
@@ -21,6 +22,33 @@ export interface NewRequest {
   title: string
   description?: string
   priority?: RequestPriority
+}
+
+export interface PageQuery {
+  page?: number
+  size?: number
+  status?: RequestStatus[]
+}
+
+const MAX_PAGE_SIZE = 100
+
+function withQuery(path: string, query: PageQuery & { clientId?: string } = {}): string {
+  const params = new URLSearchParams()
+  if (query.clientId) params.set('clientId', query.clientId)
+  if (query.page !== undefined) params.set('page', String(query.page))
+  if (query.size !== undefined) params.set('size', String(query.size))
+  query.status?.forEach((status) => params.append('status', status))
+  const text = params.toString()
+  return text ? `${path}?${text}` : path
+}
+
+export async function allPages<T>(load: (query: PageQuery) => Promise<Page<T>>, query: PageQuery = {}): Promise<T[]> {
+  const items: T[] = []
+  for (let page = 0; ; page += 1) {
+    const result = await load({ ...query, page, size: MAX_PAGE_SIZE })
+    items.push(...result.items)
+    if (page + 1 >= result.totalPages) return items
+  }
 }
 
 export interface RequestScope {
@@ -46,16 +74,18 @@ export const auth = {
 
 export const app = {
   me: () => appRequest<Me>('/api/app/me'),
-  clients: () => appRequest<Client[]>('/api/app/clients'),
+  clients: (query?: PageQuery) => appRequest<Page<Client>>(withQuery('/api/app/clients', query)),
+  client: (id: string) => appRequest<Client>(`/api/app/clients/${id}`),
   createClient: (data: { name: string; contactName?: string; email?: string }) =>
     appRequest<Client>('/api/app/clients', { method: 'POST', ...json(data) }),
-  projects: () => appRequest<Project[]>('/api/app/projects'),
+  projects: (query?: PageQuery) => appRequest<Page<Project>>(withQuery('/api/app/projects', query)),
   project: (id: string) => appRequest<Project>(`/api/app/projects/${id}`),
   createProject: (data: { clientId: string; name: string }) =>
     appRequest<Project>('/api/app/projects', { method: 'POST', ...json(data) }),
   updateProject: (id: string, data: { name: string; status: ProjectStatus }) =>
     appRequest<Project>(`/api/app/projects/${id}`, { method: 'PUT', ...json(data) }),
-  projectRequests: (projectId: string) => appRequest<ServiceRequest[]>(`/api/app/projects/${projectId}/requests`),
+  projectRequests: (projectId: string, query?: PageQuery) =>
+    appRequest<Page<ServiceRequest>>(withQuery(`/api/app/projects/${projectId}/requests`, query)),
   createRequest: (projectId: string, data: NewRequest) =>
     appRequest<ServiceRequest>(`/api/app/projects/${projectId}/requests`, { method: 'POST', ...json(data) }),
   request: (id: string) => appRequest<ServiceRequest>(`/api/app/requests/${id}`),
@@ -76,7 +106,7 @@ export const portal = (token: string) => {
   const base = `/api/portal/${encodeURIComponent(token)}`
   return {
     project: () => publicRequest<PortalProject>(`${base}/project`),
-    requests: () => publicRequest<ServiceRequest[]>(`${base}/requests`),
+    requests: (query?: PageQuery) => publicRequest<Page<ServiceRequest>>(withQuery(`${base}/requests`, query)),
     request: (id: string) => publicRequest<ServiceRequest>(`${base}/requests/${id}`),
     createRequest: (data: NewRequest) =>
       publicRequest<ServiceRequest>(`${base}/requests`, { method: 'POST', ...json(data) }),

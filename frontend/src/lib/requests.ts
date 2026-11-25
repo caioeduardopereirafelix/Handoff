@@ -2,6 +2,9 @@ import type { Activity, RequestStatus, ServiceRequest } from '../api/types'
 
 export type Turn = 'team' | 'client' | 'done'
 
+export const ACTIVE_STATUSES: RequestStatus[] = ['OPEN', 'IN_PROGRESS', 'CHANGES_REQUESTED', 'AWAITING_APPROVAL']
+export const FINISHED_STATUSES: RequestStatus[] = ['DONE', 'CANCELED']
+
 export function turnOf(status: RequestStatus): Turn {
   if (status === 'AWAITING_APPROVAL') return 'client'
   if (status === 'DONE' || status === 'CANCELED') return 'done'

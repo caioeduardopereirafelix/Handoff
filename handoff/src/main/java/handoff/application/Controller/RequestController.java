@@ -4,8 +4,10 @@ import handoff.application.Dto.ActivityLogResponseDto;
 import handoff.application.Dto.AssignRequestDto;
 import handoff.application.Dto.ChangeRequestStatusDto;
 import handoff.application.Dto.CreateRequestDto;
+import handoff.application.Dto.PageResponseDto;
 import handoff.application.Dto.RequestResponseDto;
 import handoff.application.Entity.ActorType;
+import handoff.application.Entity.RequestStatus;
 import handoff.application.Service.ActivityLogService;
 import handoff.application.Service.RequestService;
 import jakarta.validation.Valid;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -25,8 +28,11 @@ public class RequestController {
     private final ActivityLogService activityLogService;
 
     @GetMapping("/projects/{projectId}/requests")
-    public List<RequestResponseDto> list(@PathVariable UUID projectId) {
-        return requestService.listForProject(projectId);
+    public PageResponseDto<RequestResponseDto> list(@PathVariable UUID projectId,
+                                                    @RequestParam(required = false) Set<RequestStatus> status,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "50") int size) {
+        return requestService.listForProject(projectId, status, page, size);
     }
 
     @PostMapping("/projects/{projectId}/requests")

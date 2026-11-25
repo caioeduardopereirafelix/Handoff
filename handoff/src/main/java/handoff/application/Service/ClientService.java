@@ -3,16 +3,17 @@ package handoff.application.Service;
 import handoff.application.Config.TenantContext;
 import handoff.application.Dto.ClientRequestDto;
 import handoff.application.Dto.ClientResponseDto;
+import handoff.application.Dto.PageResponseDto;
 import handoff.application.Entity.Client;
 import handoff.application.Exception.ClientHasProjectsException;
 import handoff.application.Exception.ResourceNotFoundException;
 import handoff.application.Repository.ClientRepository;
 import handoff.application.Repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,10 +25,9 @@ public class ClientService {
     private final TenantContext tenantContext;
 
     @Transactional(readOnly = true)
-    public List<ClientResponseDto> list() {
-        return clientRepository.findAllByOrganizationIdOrderByNameAsc(tenantContext.getOrganizationId()).stream()
-                .map(ClientResponseDto::from)
-                .toList();
+    public PageResponseDto<ClientResponseDto> list(int page, int size) {
+        return PageResponseDto.from(clientRepository.findAllByOrganizationId(tenantContext.getOrganizationId(),
+                Pagination.of(page, size, Sort.by("name", "id"))), ClientResponseDto::from);
     }
 
     @Transactional(readOnly = true)

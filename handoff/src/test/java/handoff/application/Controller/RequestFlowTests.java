@@ -49,7 +49,7 @@ class RequestFlowTests extends ApiTestSupport {
                 .andReturn().getResponse().getContentAsString();
         String requestId = JsonPath.read(body, "$.id");
 
-        getJson(auth, "/api/app/projects/" + projectId + "/requests").andExpect(jsonPath("$", hasSize(1)));
+        getJson(auth, "/api/app/projects/" + projectId + "/requests").andExpect(jsonPath("$.items", hasSize(1)));
 
         changeStatus(requestId, "IN_PROGRESS").andExpect(status().isOk());
         changeStatus(requestId, "AWAITING_APPROVAL").andExpect(status().isOk());
@@ -158,8 +158,8 @@ class RequestFlowTests extends ApiTestSupport {
         createRequest(auth, projectId, "Pedido da padaria");
 
         portalGet(token, "/requests")
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].title", is("Pedido da padaria")));
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].title", is("Pedido da padaria")));
         portalGet(token, "/requests/" + requestOfOtherProject).andExpect(status().isNotFound());
         portalPost(token, "/requests/" + requestOfOtherProject + "/approve", "").andExpect(status().isNotFound());
     }

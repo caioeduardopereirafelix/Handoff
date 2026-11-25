@@ -120,3 +120,11 @@ export interface UploadUrl {
   headers: Record<string, string>
   expiresAt: string
 }
+
+export interface Page<T> {
+  items: T[]
+  page: number
+  size: number
+  totalItems: number
+  totalPages: number
+}
