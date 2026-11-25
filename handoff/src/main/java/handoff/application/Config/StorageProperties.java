@@ -14,6 +14,7 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "storage")
 public record StorageProperties(
         String endpoint,
+        String publicEndpoint,
         @NotBlank String region,
         @NotBlank String bucket,
         String accessKey,
@@ -23,6 +24,10 @@ public record StorageProperties(
         @Positive long maxSizeBytes,
         @NotNull Duration urlExpiration
 ) {
+
+    public String effectivePublicEndpoint() {
+        return StringUtils.hasText(publicEndpoint) ? publicEndpoint : endpoint;
+    }
 
     public String effectiveAccessKey() {
         return StringUtils.hasText(accessKey) ? accessKey : fallbackAccessKey;

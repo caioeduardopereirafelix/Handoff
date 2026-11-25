@@ -55,6 +55,7 @@ notifications:
 
 storage:
   endpoint: ${STORAGE_ENDPOINT:http://localhost:9000}
+  public-endpoint: ${STORAGE_PUBLIC_ENDPOINT:}
   region: ${STORAGE_REGION:us-east-1}
   bucket: ${STORAGE_BUCKET:handoff}
   access-key: ${STORAGE_ACCESS_KEY:}
