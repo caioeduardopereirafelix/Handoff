@@ -1,0 +1,98 @@
+name: handoff-prod
+
+services:
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-handoff}
+      POSTGRES_USER: ${DB_USERNAME:-handoff}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  rabbitmq:
+    image: rabbitmq:4-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-handoff}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?defina RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    restart: unless-stopped
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-handoff}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?defina MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER: "off"
+    volumes:
+      - minio_data:/data
+    networks: [internal]
+
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/caioeduardopereirafelix/handoff-backend}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME:-handoff}
+      DB_USERNAME: ${DB_USERNAME:-handoff}
+      DB_PASSWORD: ${DB_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-handoff}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_PUBLIC_ENDPOINT: ${PUBLIC_URL:?defina PUBLIC_URL}
+      STORAGE_BUCKET: handoff
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-handoff}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MAIL_HOST: ${MAIL_HOST:?defina MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:?defina MAIL_FROM}
+      PORTAL_BASE_URL: ${PUBLIC_URL}
+      HANDOFF_JWT_SECRET: ${HANDOFF_JWT_SECRET:?defina HANDOFF_JWT_SECRET}
+    networks: [internal]
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/caioeduardopereirafelix/handoff-frontend}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - minio
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    networks: [internal]
+
+networks:
+  internal:
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  minio_data:

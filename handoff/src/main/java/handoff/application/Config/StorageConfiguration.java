@@ -40,8 +40,8 @@ public class StorageConfiguration {
                 .region(Region.of(properties.region()))
                 .credentialsProvider(credentials(properties))
                 .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build());
-        if (StringUtils.hasText(properties.endpoint())) {
-            builder.endpointOverride(URI.create(properties.endpoint()));
+        if (StringUtils.hasText(properties.effectivePublicEndpoint())) {
+            builder.endpointOverride(URI.create(properties.effectivePublicEndpoint()));
         }
         return builder.build();
     }

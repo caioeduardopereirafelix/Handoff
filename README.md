@@ -2,7 +2,7 @@
 
 ## Como rodar localmente
 
-1. Copie `.env.example` para `.env` e preencha as senhas e a `HANDOFF_JWT_SECRET`.
+1. Crie um arquivo `.env` na raiz com `DB_PASSWORD`, `RABBITMQ_PASSWORD`, `MINIO_ROOT_PASSWORD` e `HANDOFF_JWT_SECRET` (mínimo de 32 caracteres; gere com `openssl rand -base64 48`).
 2. Suba os serviços:
    ```bash
    docker compose up -d

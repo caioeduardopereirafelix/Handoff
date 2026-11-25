@@ -28,3 +28,6 @@ replay_pid*
 
 # Variáveis de ambiente locais com segredos
 .env
+
+# Variáveis de produção
+.env.production
