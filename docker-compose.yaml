@@ -1,4 +1,4 @@
-# As senhas vêm do arquivo .env na raiz (copie de .env.example).
+# As senhas vêm do arquivo .env na raiz.
 services:
 
   postgres:
