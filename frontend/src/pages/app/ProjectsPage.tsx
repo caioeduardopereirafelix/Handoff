@@ -15,6 +15,7 @@ export function ProjectsPage() {
   const data = groups.data ?? []
   const projectCount = data.reduce((total, g) => total + g.projects.length, 0)
   const archived = data.flatMap((g) => g.projects.filter((s) => s.project.status === 'ARCHIVED'))
+  const visibleGroups = data.filter((g) => g.projects.length === 0 || g.projects.some((s) => s.project.status === 'ACTIVE'))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
@@ -35,7 +36,7 @@ export function ProjectsPage() {
         </div>
       )}
 
-      {data.map(({ client, projects }) => (
+      {visibleGroups.map(({ client, projects }) => (
         <section key={client.id} className="client-group" aria-labelledby={`cliente-${client.id}`}>
           <div className="client-group-head">
             <h2 id={`cliente-${client.id}`} className="section-title">{client.name}</h2>
