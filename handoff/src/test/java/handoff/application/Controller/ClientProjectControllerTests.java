@@ -128,6 +128,10 @@ class ClientProjectControllerTests extends ApiTestSupport {
                 """).andExpect(status().isOk());
         deleteJson(memberAuth, "/api/app/clients/" + clientId).andExpect(status().isForbidden());
 
+        String projectId = createProject(ownerAuth, clientId, "Projeto da equipe");
+        deleteJson(memberAuth, "/api/app/projects/" + projectId).andExpect(status().isForbidden());
+        deleteJson(ownerAuth, "/api/app/projects/" + projectId).andExpect(status().isNoContent());
+
         deleteJson(ownerAuth, "/api/app/clients/" + clientId).andExpect(status().isNoContent());
     }
 

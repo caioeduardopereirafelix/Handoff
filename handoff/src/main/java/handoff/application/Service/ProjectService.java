@@ -7,14 +7,17 @@ import handoff.application.Dto.ProjectResponseDto;
 import handoff.application.Dto.ProjectUpdateDto;
 import handoff.application.Entity.Project;
 import handoff.application.Exception.ResourceNotFoundException;
+import handoff.application.Repository.AttachmentRepository;
 import handoff.application.Repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,6 +27,8 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ClientService clientService;
     private final TenantContext tenantContext;
+    private final AttachmentRepository attachmentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public PageResponseDto<ProjectResponseDto> list(UUID clientId, int page, int size) {
@@ -58,7 +63,11 @@ public class ProjectService {
 
     @Transactional
     public void delete(UUID id) {
-        projectRepository.delete(find(id));
+        Project project = find(id);
+        List<String> storageKeys = attachmentRepository.findStorageKeysOfProject(tenantContext.getOrganizationId(), id);
+        projectRepository.delete(project);
+        projectRepository.flush();
+        eventPublisher.publishEvent(new ProjectDeletedEvent(storageKeys));
     }
 
     Project find(UUID id) {

@@ -26,6 +26,7 @@
   --danger-text: #9e3d37;
   --info-text: #3b5f77;
   --on-success: #ffffff;
+  --on-danger: #ffffff;
 
   --nav-bg: var(--surface-2);
 
@@ -82,6 +83,7 @@
     --danger-text: #e58b83;
     --info-text: #8cb9d5;
     --on-success: #171b18;
+    --on-danger: #171b18;
     --nav-bg: var(--surface);
   }
 }
@@ -113,6 +115,7 @@
   --danger-text: #e58b83;
   --info-text: #8cb9d5;
   --on-success: #171b18;
+  --on-danger: #171b18;
   --nav-bg: var(--surface);
 }
 
@@ -145,6 +148,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn-quiet { background: var(--surface); border-color: var(--border-strong); color: var(--text); }
 .btn-quiet:hover { background: var(--surface-2); color: var(--text); }
 .btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+.btn-danger-solid { background: var(--danger); color: var(--on-danger); }
+.btn-danger-solid:hover { filter: brightness(1.08); color: var(--on-danger); }
 .btn-danger:hover { background: var(--danger-soft); color: var(--danger-text); }
 .btn-large { min-height: 56px; font-size: 17px; }
 .btn-icon { width: 52px; padding: 0; }
