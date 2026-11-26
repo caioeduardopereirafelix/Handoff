@@ -82,6 +82,7 @@ export const app = {
   project: (id: string) => appRequest<Project>(`/api/app/projects/${id}`),
   createProject: (data: { clientId: string; name: string }) =>
     appRequest<Project>('/api/app/projects', { method: 'POST', ...json(data) }),
+  deleteProject: (id: string) => appRequest<void>(`/api/app/projects/${id}`, { method: 'DELETE' }),
   updateProject: (id: string, data: { name: string; status: ProjectStatus }) =>
     appRequest<Project>(`/api/app/projects/${id}`, { method: 'PUT', ...json(data) }),
   projectRequests: (projectId: string, query?: PageQuery) =>

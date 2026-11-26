@@ -2,16 +2,19 @@ import { Link, useParams } from 'react-router-dom'
 import { app } from '../../api/api'
 import type { ServiceRequest } from '../../api/types'
 import { BackIcon, PlusIcon } from '../../components/Icons'
+import { DeleteProject } from '../../components/DeleteProject'
 import { PortalLinks } from '../../components/PortalLinks'
 import { linkStatus, linkToneColor, loadActiveRequests, summarize, turnSummary } from '../../lib/projects'
 import { byNewest, FINISHED_STATUSES, relativeDay, shortDate, statusLabel, turnOf } from '../../lib/requests'
 import { useLoad } from '../../lib/useLoad'
 import { usePagedList } from '../../lib/usePagedList'
+import { useApp } from './AppLayout'
 
 const FINISHED_PAGE_SIZE = 20
 
 export function ProjectDetailPage() {
   const { id = '' } = useParams()
+  const { me } = useApp()
   const data = useLoad(async () => {
     const [project, active, links] = await Promise.all([
       app.project(id),
@@ -82,6 +85,10 @@ export function ProjectDetailPage() {
             <p style={{ fontSize: 15, color: linkToneColor[status.tone], fontWeight: 600 }}>{status.text}</p>
             <PortalLinks projectId={project.id} clientHasEmail={Boolean(client?.email)} onChanged={data.reload} clientName={project.clientName} projectName={project.name} />
           </section>
+
+          {me.role === 'OWNER' && (
+            <DeleteProject projectId={project.id} projectName={project.name} requestCount={active.length + finished.total} />
+          )}
         </aside>
       </div>
     </div>
