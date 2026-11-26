@@ -3,7 +3,7 @@ import { app } from '../api/api'
 import type { PortalAccessCreated } from '../api/types'
 import { shortDate } from '../lib/requests'
 import { messageOf, useLoad } from '../lib/useLoad'
-import { AlertIcon, CopyIcon, MailIcon, ShareIcon } from './Icons'
+import { OneTimeLink } from './OneTimeLink'
 
 export function portalUrl(token: string): string {
   return `${window.location.origin}/portal/${token}`
@@ -20,60 +20,16 @@ function shareMessage(url: string, { clientName, projectName }: LinkContext): st
   return `${greeting} Este é o link do portal${project}, onde você abre, acompanha e aprova as solicitações: ${url}`
 }
 
-function canUseShareSheet(): boolean {
-  return typeof navigator !== 'undefined' && typeof navigator.share === 'function'
-}
-
 export function CreatedLink({ created, clientName, projectName }: { created: PortalAccessCreated } & LinkContext) {
-  const [copied, setCopied] = useState(false)
   const url = portalUrl(created.token)
-  const message = shareMessage(url, { clientName, projectName })
-  const subject = projectName ? `Portal do projeto ${projectName}` : 'Link do portal'
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-    } catch {
-      setCopied(false)
-    }
-  }
-
-  async function share() {
-    try {
-      await navigator.share({ title: subject, text: message })
-    } catch {
-      return
-    }
-  }
-
   return (
-    <div className="notice-box" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <p>
-        Link do portal criado, válido até {shortDate(created.expiresAt)}.
-        {created.emailSent ? ' Também foi enviado por e-mail ao cliente.' : ''}
-      </p>
-      <p className="warning-box" role="alert">
-        <AlertIcon />
-        <span>Este link é único e não poderá ser visto de novo. Copie ou compartilhe agora. Se ele se perder, gere um link novo e revogue este.</span>
-      </p>
-      <code style={{ minWidth: 0, overflowWrap: 'anywhere', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 400 }}>{url}</code>
-      <div className="link-actions">
-        <button type="button" className="btn btn-primary" onClick={copy}><CopyIcon />{copied ? 'Copiado' : 'Copiar link'}</button>
-        {canUseShareSheet() ? (
-          <button type="button" className="btn btn-quiet" onClick={share}><ShareIcon />Compartilhar</button>
-        ) : (
-          <>
-            <a className="btn btn-quiet" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer" aria-label="Enviar pelo WhatsApp">
-              <ShareIcon />WhatsApp
-            </a>
-            <a className="btn btn-quiet" href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`} aria-label="Enviar por e-mail">
-              <MailIcon />E-mail
-            </a>
-          </>
-        )}
-      </div>
-    </div>
+    <OneTimeLink
+      url={url}
+      intro={`Link do portal criado, válido até ${shortDate(created.expiresAt)}.${created.emailSent ? ' Também foi enviado por e-mail ao cliente.' : ''}`}
+      warning="Este link é único e não poderá ser visto de novo. Copie ou compartilhe agora. Se ele se perder, gere um link novo e revogue este."
+      subject={projectName ? `Portal do projeto ${projectName}` : 'Link do portal'}
+      message={shareMessage(url, { clientName, projectName })}
+    />
   )
 }
 

@@ -4,6 +4,8 @@ import type {
   Attachment,
   Client,
   Comment,
+  InvitationCreated,
+  InvitationPreview,
   Me,
   Page,
   PortalAccess,
@@ -13,7 +15,10 @@ import type {
   ProjectStatus,
   RequestPriority,
   RequestStatus,
+  Role,
   ServiceRequest,
+  Team,
+  TeamMember,
   TokenResponse,
   UploadUrl,
 } from './types'
@@ -101,6 +106,19 @@ export const app = {
     base: `/api/app/requests/${requestId}`,
     request: appRequest,
   }),
+  team: () => appRequest<Team>('/api/app/team'),
+  invite: (data: { email: string; role: Role }) =>
+    appRequest<InvitationCreated>('/api/app/team/invitations', { method: 'POST', ...json(data) }),
+  revokeInvitation: (id: string) => appRequest<void>(`/api/app/team/invitations/${id}`, { method: 'DELETE' }),
+  updateMember: (id: string, data: { role?: Role; active?: boolean }) =>
+    appRequest<TeamMember>(`/api/app/team/members/${id}`, { method: 'PATCH', ...json(data) }),
+}
+
+export const invitations = {
+  preview: (token: string) => publicRequest<InvitationPreview>(`/api/invitations/${encodeURIComponent(token)}`),
+  async accept(token: string, data: { name: string; password: string }) {
+    session.store(await publicRequest<TokenResponse>(`/api/invitations/${encodeURIComponent(token)}/accept`, { method: 'POST', ...json(data) }))
+  },
 }
 
 export const portal = (token: string) => {

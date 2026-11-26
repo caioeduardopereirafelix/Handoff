@@ -20,4 +20,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
     Optional<AppUser> findByIdAndOrganizationId(UUID id, UUID organizationId);
 
     List<AppUser> findAllByOrganizationIdAndRoleAndActiveTrue(UUID organizationId, Role role);
+
+    List<AppUser> findAllByOrganizationIdOrderByNameAsc(UUID organizationId);
+
+    long countByOrganizationIdAndRoleAndActiveTrue(UUID organizationId, Role role);
 }

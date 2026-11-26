@@ -128,3 +128,42 @@ export interface Page<T> {
   totalItems: number
   totalPages: number
 }
+
+export interface TeamMember {
+  id: string
+  name: string
+  email: string
+  role: Role
+  active: boolean
+  createdAt: string
+}
+
+export interface PendingInvitation {
+  id: string
+  email: string
+  role: Role
+  invitedByName: string | null
+  expiresAt: string
+  createdAt: string
+}
+
+export interface Team {
+  members: TeamMember[]
+  invitations: PendingInvitation[]
+}
+
+export interface InvitationCreated {
+  id: string
+  email: string
+  role: Role
+  token: string
+  expiresAt: string
+  emailSent: boolean
+}
+
+export interface InvitationPreview {
+  organizationName: string
+  invitedByName: string
+  email: string
+  expiresAt: string
+}

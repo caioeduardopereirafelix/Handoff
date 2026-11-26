@@ -4,6 +4,7 @@ import handoff.application.Entity.Invitation;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,4 +17,8 @@ public interface InvitationRepository extends JpaRepository<Invitation, UUID> {
     Optional<Invitation> findByIdAndOrganizationId(UUID id, UUID organizationId);
 
     List<Invitation> findAllByOrganizationIdAndEmailAndAcceptedAtIsNullAndRevokedAtIsNull(UUID organizationId, String email);
+
+    @EntityGraph(attributePaths = "invitedBy")
+    List<Invitation> findAllByOrganizationIdAndAcceptedAtIsNullAndRevokedAtIsNullAndExpiresAtAfterOrderByCreatedAtDesc(
+            UUID organizationId, Instant now);
 }

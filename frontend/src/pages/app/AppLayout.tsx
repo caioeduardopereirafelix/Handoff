@@ -52,6 +52,7 @@ export function AppLayout() {
               Solicitações {yourTurnCount > 0 && <span className="nav-count">{yourTurnCount}</span>}
             </NavLink>
             <NavLink to="/app/projetos" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>Projetos</NavLink>
+            <NavLink to="/app/equipe" className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>Equipe</NavLink>
           </div>
           <div className="nav-user" style={{ marginTop: 'auto', padding: '0 12px', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
