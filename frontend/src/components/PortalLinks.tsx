@@ -58,17 +58,17 @@ export function CreatedLink({ created, clientName, projectName }: { created: Por
         <span>Este link é único e não poderá ser visto de novo. Copie ou compartilhe agora. Se ele se perder, gere um link novo e revogue este.</span>
       </p>
       <code style={{ minWidth: 0, overflowWrap: 'anywhere', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 400 }}>{url}</code>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+      <div className="link-actions">
         <button type="button" className="btn btn-primary" onClick={copy}><CopyIcon />{copied ? 'Copiado' : 'Copiar link'}</button>
         {canUseShareSheet() ? (
           <button type="button" className="btn btn-quiet" onClick={share}><ShareIcon />Compartilhar</button>
         ) : (
           <>
-            <a className="btn btn-quiet" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
-              <ShareIcon />Enviar pelo WhatsApp
+            <a className="btn btn-quiet" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer" aria-label="Enviar pelo WhatsApp">
+              <ShareIcon />WhatsApp
             </a>
-            <a className="btn btn-quiet" href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`}>
-              <MailIcon />Enviar por e-mail
+            <a className="btn btn-quiet" href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`} aria-label="Enviar por e-mail">
+              <MailIcon />E-mail
             </a>
           </>
         )}
