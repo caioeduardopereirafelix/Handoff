@@ -14,6 +14,7 @@ import handoff.application.Entity.Request;
 import handoff.application.Entity.RequestPriority;
 import handoff.application.Entity.RequestStatus;
 import handoff.application.Exception.ResourceNotFoundException;
+import handoff.application.Exception.TeamChangeNotAllowedException;
 import handoff.application.Repository.AppUserRepository;
 import handoff.application.Repository.ProjectRepository;
 import handoff.application.Repository.RequestRepository;
@@ -103,6 +104,9 @@ public class RequestService {
                 ? null
                 : userRepository.findByIdAndOrganizationId(dto.assigneeId(), tenantContext.getOrganizationId())
                         .orElseThrow(() -> new ResourceNotFoundException("Responsável"));
+        if (assignee != null && !assignee.isActive()) {
+            throw new TeamChangeNotAllowedException("Esta pessoa está desativada e não pode ser responsável");
+        }
         request.setAssignee(assignee);
         request.setDueDate(dto.dueDate());
         activityLogService.record(request, ActivityAction.ASSIGNMENT_CHANGED);

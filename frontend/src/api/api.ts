@@ -95,6 +95,8 @@ export const app = {
   createRequest: (projectId: string, data: NewRequest) =>
     appRequest<ServiceRequest>(`/api/app/projects/${projectId}/requests`, { method: 'POST', ...json(data) }),
   request: (id: string) => appRequest<ServiceRequest>(`/api/app/requests/${id}`),
+  assign: (id: string, data: { assigneeId: string | null; dueDate: string | null }) =>
+    appRequest<ServiceRequest>(`/api/app/requests/${id}/assignment`, { method: 'PUT', ...json(data) }),
   changeStatus: (id: string, status: RequestStatus) =>
     appRequest<ServiceRequest>(`/api/app/requests/${id}/status`, { method: 'PATCH', ...json({ status }) }),
   portalLinks: (projectId: string) => appRequest<PortalAccess[]>(`/api/app/projects/${projectId}/portal-access`),

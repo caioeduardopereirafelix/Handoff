@@ -32,9 +32,18 @@ function why(request: ServiceRequest): string {
   }
 }
 
+type AssigneeFilter = 'all' | 'mine' | 'unassigned'
+
+const assigneeFilters: { value: AssigneeFilter; label: string }[] = [
+  { value: 'all', label: 'Todas' },
+  { value: 'mine', label: 'Minhas' },
+  { value: 'unassigned', label: 'Sem responsável' },
+]
+
 export function BoardPage() {
-  const { setYourTurnCount } = useApp()
+  const { me, setYourTurnCount } = useApp()
   const [projectFilter, setProjectFilter] = useState<string | null>(null)
+  const [assigneeFilter, setAssigneeFilter] = useState<AssigneeFilter>('all')
   const board = useLoad(async () => {
     const all = await allPages(app.projects)
     const projects = all.filter((p) => p.status === 'ACTIVE')
@@ -44,7 +53,11 @@ export function BoardPage() {
   }, [])
 
   const items = board.data?.items ?? []
-  const visible = items.filter((i) => !projectFilter || i.project.id === projectFilter)
+  const visible = items
+    .filter((i) => !projectFilter || i.project.id === projectFilter)
+    .filter((i) => assigneeFilter === 'all'
+      || (assigneeFilter === 'mine' && i.request.assigneeId === me.id)
+      || (assigneeFilter === 'unassigned' && i.request.assigneeId === null))
   const ours = visible.filter((i) => turnOf(i.request.status) === 'team').sort((a, b) => byNewest(a.request, b.request))
   const theirs = visible.filter((i) => turnOf(i.request.status) === 'client').sort((a, b) => byNewest(a.request, b.request))
   const allOurs = items.filter((i) => turnOf(i.request.status) === 'team').length
@@ -79,6 +92,14 @@ export function BoardPage() {
           </p>
         </div>
         <Link to="/app/solicitacoes/nova" className="btn btn-primary"><PlusIcon />Nova solicitação</Link>
+      </div>
+
+      <div className="chips" role="group" aria-label="Filtrar por responsável">
+        {assigneeFilters.map((filter) => (
+          <button key={filter.value} type="button" className="chip" aria-pressed={assigneeFilter === filter.value} onClick={() => setAssigneeFilter(filter.value)}>
+            {filter.label}
+          </button>
+        ))}
       </div>
 
       {projects.length > 1 && (
@@ -117,6 +138,7 @@ function Column({ title, items, yours, empty }: { title: string; items: BoardIte
               <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 16, fontWeight: 700 }}>{request.title}</span>
                 <span style={{ fontSize: 14, color: 'var(--muted)' }}>{project.clientName}, {project.name}</span>
+                <span style={{ fontSize: 14, color: 'var(--muted)' }}>{request.assigneeName ? `Responsável: ${request.assigneeName}` : 'Sem responsável'}</span>
                 <span style={{ fontSize: 14, fontWeight: yours ? 600 : 400, color: yours ? 'var(--ink)' : 'var(--ink-soft)' }}>{why(request)}</span>
               </span>
               <span style={{ fontSize: 14, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{relativeDay(request.updatedAt)}</span>

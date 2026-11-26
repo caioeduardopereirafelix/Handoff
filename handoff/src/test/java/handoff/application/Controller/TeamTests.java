@@ -118,6 +118,27 @@ class TeamTests extends ApiTestSupport {
         update(UUID.randomUUID().toString(), "{\"active\":false}").andExpect(status().isNotFound());
     }
 
+    @Test
+    void requestsCanBeAssignedToActiveMembersOnly() throws Exception {
+        Member bia = join("Bia");
+        String projectId = createProject(ownerAuth, createClient(ownerAuth, "Padaria"), "Site");
+        String first = createRequest(ownerAuth, projectId, "Trocar foto");
+        String second = createRequest(ownerAuth, projectId, "Novo banner");
+
+        putJson(ownerAuth, "/api/app/requests/" + first + "/assignment", "{\"assigneeId\":\"%s\"}".formatted(bia.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assigneeName", is("Bia")));
+
+        update(bia.id(), "{\"active\":false}").andExpect(status().isOk());
+
+        putJson(ownerAuth, "/api/app/requests/" + second + "/assignment", "{\"assigneeId\":\"%s\"}".formatted(bia.id()))
+                .andExpect(status().isConflict());
+        getJson(ownerAuth, "/api/app/requests/" + first).andExpect(jsonPath("$.assigneeName", is("Bia")));
+        putJson(ownerAuth, "/api/app/requests/" + first + "/assignment", "{\"assigneeId\":null}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assigneeId").doesNotExist());
+    }
+
     private record Member(String id, String email, String auth, String refreshToken) {
     }
 

@@ -2,33 +2,37 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { app, thread } from '../../api/api'
 import type { RequestStatus } from '../../api/types'
+import { AssigneePicker } from '../../components/AssigneePicker'
 import { Conversation } from '../../components/Conversation'
 import { BackIcon } from '../../components/Icons'
 import { Timeline } from '../../components/Timeline'
 import { relativeDay, statusLabel, teamActions, timeline, turnOf } from '../../lib/requests'
 import { messageOf, useLoad } from '../../lib/useLoad'
+import { useApp } from './AppLayout'
 
 export function RequestDetailPage() {
   const { id = '' } = useParams()
+  const { me } = useApp()
   const scope = app.scope(id)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   const data = useLoad(async () => {
     const request = await app.request(id)
-    const [project, comments, attachments, activity] = await Promise.all([
+    const [project, comments, attachments, activity, team] = await Promise.all([
       app.project(request.projectId),
       thread.comments(scope),
       thread.attachments(scope),
       thread.activity(scope),
+      app.team(),
     ])
-    return { request, project, comments, attachments, activity }
+    return { request, project, comments, attachments, activity, members: team.members }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   if (data.loading && !data.data) return <p style={{ color: 'var(--muted)' }}>Carregando solicitação…</p>
   if (data.error) return <p className="error-box" role="alert">{data.error.message}</p>
-  const { request, project, comments, attachments, activity } = data.data!
+  const { request, project, comments, attachments, activity, members } = data.data!
   const turn = turnOf(request.status)
 
   async function change(status: RequestStatus) {
@@ -107,6 +111,7 @@ export function RequestDetailPage() {
         </div>
 
         <aside style={{ flex: '0 1 300px', minWidth: 260 }} aria-label="Andamento">
+          <AssigneePicker request={request} members={members} meId={me.id} onChanged={data.reload} />
           <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Andamento</h2>
           <Timeline steps={timeline(request, activity, 'team')} />
         </aside>
