@@ -2,6 +2,7 @@ package handoff.application.Handler;
 
 import handoff.application.Exception.AttachmentNotUploadedException;
 import handoff.application.Exception.ClientHasProjectsException;
+import handoff.application.Exception.TeamChangeNotAllowedException;
 import handoff.application.Exception.InvalidAttachmentException;
 import handoff.application.Exception.EmailAlreadyUsedException;
 import handoff.application.Exception.ResourceNotFoundException;
@@ -36,6 +37,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFound(ResourceNotFoundException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(TeamChangeNotAllowedException.class)
+    public ProblemDetail handleTeamChangeNotAllowed(TeamChangeNotAllowedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
     }
 
     @ExceptionHandler(ClientHasProjectsException.class)

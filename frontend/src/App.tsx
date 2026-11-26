@@ -6,6 +6,8 @@ import { NewProjectPage } from './pages/app/NewProjectPage'
 import { ProjectDetailPage } from './pages/app/ProjectDetailPage'
 import { ProjectsPage } from './pages/app/ProjectsPage'
 import { RequestDetailPage } from './pages/app/RequestDetailPage'
+import { TeamPage } from './pages/app/TeamPage'
+import { AcceptInvitationPage } from './pages/auth/AcceptInvitationPage'
 import { LoginPage, RegisterPage } from './pages/auth/AuthPages'
 import { PortalHomePage } from './pages/portal/PortalHomePage'
 import { PortalLayout } from './pages/portal/PortalLayout'
@@ -18,6 +20,7 @@ export function App() {
       <Route path="/" element={<Navigate to="/app" replace />} />
       <Route path="/entrar" element={<LoginPage />} />
       <Route path="/criar-conta" element={<RegisterPage />} />
+      <Route path="/convite/:token" element={<AcceptInvitationPage />} />
       <Route path="/app" element={<AppLayout />}>
         <Route index element={<BoardPage />} />
         <Route path="projetos" element={<ProjectsPage />} />
@@ -25,6 +28,7 @@ export function App() {
         <Route path="projetos/:id" element={<ProjectDetailPage />} />
         <Route path="solicitacoes/nova" element={<NewRequestPage />} />
         <Route path="solicitacoes/:id" element={<RequestDetailPage />} />
+        <Route path="equipe" element={<TeamPage />} />
       </Route>
       <Route path="/portal/:token" element={<PortalLayout />}>
         <Route index element={<PortalHomePage />} />
