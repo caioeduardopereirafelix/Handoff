@@ -36,10 +36,11 @@ export function BoardPage() {
   const { setYourTurnCount } = useApp()
   const [projectFilter, setProjectFilter] = useState<string | null>(null)
   const board = useLoad(async () => {
-    const projects = (await allPages(app.projects)).filter((p) => p.status === 'ACTIVE')
+    const all = await allPages(app.projects)
+    const projects = all.filter((p) => p.status === 'ACTIVE')
     const lists = await Promise.all(projects.map((p) => loadActiveRequests(p.id)))
     const items: BoardItem[] = lists.flatMap((requests, i) => requests.map((request) => ({ request, project: projects[i] })))
-    return { projects, items }
+    return { projects, items, hasAnyProject: all.length > 0 }
   }, [])
 
   const items = board.data?.items ?? []
@@ -56,7 +57,7 @@ export function BoardPage() {
   if (board.error) return <p className="error-box" role="alert">{board.error.message}</p>
 
   const projects = board.data?.projects ?? []
-  if (projects.length === 0) {
+  if (!board.data?.hasAnyProject) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'flex-start' }}>
         <h1 style={{ fontSize: 48, lineHeight: 1, fontWeight: 800, letterSpacing: '-0.035em' }}>Comece pelo primeiro cliente</h1>

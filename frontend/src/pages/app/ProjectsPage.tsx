@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PlusIcon } from '../../components/Icons'
 import { linkStatus, linkToneColor, loadProjectSummaries, turnSummary } from '../../lib/projects'
@@ -6,12 +7,14 @@ import { useLoad } from '../../lib/useLoad'
 
 export function ProjectsPage() {
   const groups = useLoad(() => loadProjectSummaries(), [])
+  const [showArchived, setShowArchived] = useState(false)
 
   if (groups.loading && !groups.data) return <p style={{ color: 'var(--muted)' }}>Carregando projetos…</p>
   if (groups.error) return <p className="error-box" role="alert">{groups.error.message}</p>
 
   const data = groups.data ?? []
   const projectCount = data.reduce((total, g) => total + g.projects.length, 0)
+  const archived = data.flatMap((g) => g.projects.filter((s) => s.project.status === 'ARCHIVED'))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
@@ -41,13 +44,29 @@ export function ProjectsPage() {
             </span>
           </div>
           <div className="project-grid">
-            {projects.map((summary) => <ProjectCard key={summary.project.id} summary={summary} />)}
+            {projects.filter((s) => s.project.status === 'ACTIVE').map((summary) => <ProjectCard key={summary.project.id} summary={summary} />)}
             <Link to={`/app/projetos/novo?cliente=${client.id}`} className="project-card-new">
               <PlusIcon />Projeto para {client.name}
             </Link>
           </div>
         </section>
       ))}
+
+      {archived.length > 0 && (
+        <section aria-labelledby="arquivados-titulo" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+            <h2 id="arquivados-titulo" className="section-title">Arquivados ({archived.length})</h2>
+            <button type="button" className="btn btn-quiet" aria-expanded={showArchived} aria-controls="lista-arquivados" onClick={() => setShowArchived(!showArchived)}>
+              {showArchived ? 'Esconder arquivados' : 'Mostrar arquivados'}
+            </button>
+          </div>
+          {showArchived && (
+            <div id="lista-arquivados" className="project-grid">
+              {archived.map((summary) => <ProjectCard key={summary.project.id} summary={summary} />)}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   )
 }
@@ -60,7 +79,7 @@ function ProjectCard({ summary }: { summary: ProjectSummary }) {
     <Link to={`/app/projetos/${project.id}`} className={`project-card${mine > 0 ? ' is-yours' : ''}`}>
       <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 10 }}>
         <span style={{ fontSize: 20, fontWeight: 700 }}>{project.name}</span>
-        {project.status === 'ARCHIVED' && <span style={{ fontSize: 14, color: 'var(--muted)' }}>arquivado</span>}
+        {project.status === 'ARCHIVED' && <span style={{ fontSize: 14, color: 'var(--muted)' }}>{project.clientName}</span>}
       </span>
       <span className="turn-strip" aria-hidden="true">
         {mine > 0 && <span style={{ flex: mine, background: 'var(--warning)' }} />}

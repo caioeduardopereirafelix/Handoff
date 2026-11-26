@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { app } from '../../api/api'
 import type { ServiceRequest } from '../../api/types'
 import { BackIcon, PlusIcon } from '../../components/Icons'
+import { ArchivedBanner, ArchiveProject } from '../../components/ArchiveProject'
 import { DeleteProject } from '../../components/DeleteProject'
 import { PortalLinks } from '../../components/PortalLinks'
 import { linkStatus, linkToneColor, loadActiveRequests, summarize, turnSummary } from '../../lib/projects'
@@ -52,8 +53,12 @@ export function ProjectDetailPage() {
             {active.length + finished.total === 0 ? 'Nenhuma solicitação ainda.' : turnSummary(summary)}
           </p>
         </div>
-        <Link to={`/app/solicitacoes/nova?projeto=${project.id}`} className="btn btn-primary"><PlusIcon />Nova solicitação</Link>
+        {project.status === 'ACTIVE' && (
+          <Link to={`/app/solicitacoes/nova?projeto=${project.id}`} className="btn btn-primary"><PlusIcon />Nova solicitação</Link>
+        )}
       </div>
+
+      {project.status === 'ARCHIVED' && <ArchivedBanner project={project} onChanged={data.reload} />}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, alignItems: 'flex-start' }}>
         <div style={{ flex: '1 1 480px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -85,6 +90,8 @@ export function ProjectDetailPage() {
             <p style={{ fontSize: 15, color: linkToneColor[status.tone], fontWeight: 600 }}>{status.text}</p>
             <PortalLinks projectId={project.id} clientHasEmail={Boolean(client?.email)} onChanged={data.reload} clientName={project.clientName} projectName={project.name} />
           </section>
+
+          {project.status === 'ACTIVE' && <ArchiveProject project={project} onChanged={data.reload} />}
 
           {me.role === 'OWNER' && (
             <DeleteProject projectId={project.id} projectName={project.name} requestCount={active.length + finished.total} />
