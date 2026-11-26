@@ -39,4 +39,13 @@ export const FileIcon = (p: IconProps) => (
 export const CopyIcon = (p: IconProps) => (
   <Svg {...p}><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 012-2h10" /></Svg>
 )
+export const ShareIcon = (p: IconProps) => (
+  <Svg {...p}><path d="M12 15V4M8 8l4-4 4 4M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" /></Svg>
+)
+export const AlertIcon = (p: IconProps) => (
+  <Svg {...p}><path d="M12 4l9 16H3z" /><path d="M12 10v4M12 17.5v.01" /></Svg>
+)
+export const MailIcon = (p: IconProps) => (
+  <Svg {...p}><path d="M4 6h16v12H4z" /><path d="M4 7l8 6 8-6" /></Svg>
+)
 export const CloseIcon = (p: IconProps) => <Svg {...p}><path d="M6 6l12 12M18 6L6 18" /></Svg>

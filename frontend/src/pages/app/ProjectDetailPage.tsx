@@ -80,7 +80,7 @@ export function ProjectDetailPage() {
           <section className="panel" aria-labelledby="links-titulo" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <h2 id="links-titulo" style={{ fontSize: 20, fontWeight: 800 }}>Link do portal</h2>
             <p style={{ fontSize: 15, color: linkToneColor[status.tone], fontWeight: 600 }}>{status.text}</p>
-            <PortalLinks projectId={project.id} clientHasEmail={Boolean(client?.email)} onChanged={data.reload} />
+            <PortalLinks projectId={project.id} clientHasEmail={Boolean(client?.email)} onChanged={data.reload} clientName={project.clientName} projectName={project.name} />
           </section>
         </aside>
       </div>

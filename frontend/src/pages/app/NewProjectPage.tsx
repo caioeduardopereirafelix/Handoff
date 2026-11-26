@@ -93,7 +93,7 @@ function Wizard({ clients, preselectedId }: { clients: Client[]; preselectedId: 
           {createdProject.name}, para {createdProject.clientName}.
           {choice === 'none' ? ' Você pode gerar o link do portal depois, na página do projeto.' : ''}
         </p>
-        {createdLink && <CreatedLink created={createdLink} />}
+        {createdLink && <CreatedLink created={createdLink} clientName={createdProject.clientName} projectName={createdProject.name} />}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
           <Link to={`/app/projetos/${createdProject.id}`} className="btn btn-primary btn-large">Abrir o projeto</Link>
           <button type="button" className="btn btn-quiet btn-large" onClick={() => navigate(0)}>Criar outro projeto</button>
