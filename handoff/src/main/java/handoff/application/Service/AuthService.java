@@ -98,12 +98,16 @@ public class AuthService {
         refreshTokenService.revokeFamilyOf(refreshToken);
     }
 
+    TokenResponseDto issueTokens(AppUser user) {
+        return tokensFor(user, refreshTokenService.issueNewFamily(user));
+    }
+
     private TokenResponseDto tokensFor(AppUser user, String refreshToken) {
         return new TokenResponseDto(tokenProvider.generateToken(user), "Bearer",
                 tokenProvider.getExpirationMillis(), refreshToken);
     }
 
-    private static String normalizeEmail(String email) {
+    static String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 
