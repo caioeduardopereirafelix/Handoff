@@ -3,15 +3,32 @@ import { app } from '../api/api'
 import type { PortalAccessCreated } from '../api/types'
 import { shortDate } from '../lib/requests'
 import { messageOf, useLoad } from '../lib/useLoad'
-import { CopyIcon } from './Icons'
+import { AlertIcon, CopyIcon, MailIcon, ShareIcon } from './Icons'
 
 export function portalUrl(token: string): string {
   return `${window.location.origin}/portal/${token}`
 }
 
-export function CreatedLink({ created }: { created: PortalAccessCreated }) {
+interface LinkContext {
+  clientName?: string
+  projectName?: string
+}
+
+function shareMessage(url: string, { clientName, projectName }: LinkContext): string {
+  const greeting = clientName ? `Olá, ${clientName}!` : 'Olá!'
+  const project = projectName ? ` do projeto ${projectName}` : ''
+  return `${greeting} Este é o link do portal${project}, onde você abre, acompanha e aprova as solicitações: ${url}`
+}
+
+function canUseShareSheet(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+}
+
+export function CreatedLink({ created, clientName, projectName }: { created: PortalAccessCreated } & LinkContext) {
   const [copied, setCopied] = useState(false)
   const url = portalUrl(created.token)
+  const message = shareMessage(url, { clientName, projectName })
+  const subject = projectName ? `Portal do projeto ${projectName}` : 'Link do portal'
 
   async function copy() {
     try {
@@ -22,21 +39,45 @@ export function CreatedLink({ created }: { created: PortalAccessCreated }) {
     }
   }
 
+  async function share() {
+    try {
+      await navigator.share({ title: subject, text: message })
+    } catch {
+      return
+    }
+  }
+
   return (
-    <div className="notice-box" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div className="notice-box" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <p>
-        Link criado. Ele aparece só agora: copie e guarde, ou envie ao cliente.
+        Link do portal criado, válido até {shortDate(created.expiresAt)}.
         {created.emailSent ? ' Também foi enviado por e-mail ao cliente.' : ''}
       </p>
+      <p className="warning-box" role="alert">
+        <AlertIcon />
+        <span>Este link é único e não poderá ser visto de novo. Copie ou compartilhe agora. Se ele se perder, gere um link novo e revogue este.</span>
+      </p>
+      <code style={{ minWidth: 0, overflowWrap: 'anywhere', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 400 }}>{url}</code>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        <code style={{ flex: '1 1 320px', minWidth: 0, overflowWrap: 'anywhere', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 12px', borderRadius: 10, fontSize: 14 }}>{url}</code>
         <button type="button" className="btn btn-primary" onClick={copy}><CopyIcon />{copied ? 'Copiado' : 'Copiar link'}</button>
+        {canUseShareSheet() ? (
+          <button type="button" className="btn btn-quiet" onClick={share}><ShareIcon />Compartilhar</button>
+        ) : (
+          <>
+            <a className="btn btn-quiet" href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
+              <ShareIcon />Enviar pelo WhatsApp
+            </a>
+            <a className="btn btn-quiet" href={`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`}>
+              <MailIcon />Enviar por e-mail
+            </a>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
-export function PortalLinks({ projectId, clientHasEmail, onChanged }: { projectId: string; clientHasEmail: boolean; onChanged?: () => void }) {
+export function PortalLinks({ projectId, clientHasEmail, onChanged, clientName, projectName }: { projectId: string; clientHasEmail: boolean; onChanged?: () => void } & LinkContext) {
   const links = useLoad(() => app.portalLinks(projectId), [projectId])
   const [days, setDays] = useState(90)
   const [sendToClient, setSendToClient] = useState(clientHasEmail)
@@ -73,7 +114,7 @@ export function PortalLinks({ projectId, clientHasEmail, onChanged }: { projectI
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {created && <CreatedLink created={created} />}
+      {created && <CreatedLink created={created} clientName={clientName} projectName={projectName} />}
 
       <form onSubmit={create} style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
         <div className="field" style={{ flex: '0 1 180px' }}>

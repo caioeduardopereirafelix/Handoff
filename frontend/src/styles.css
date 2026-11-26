@@ -176,6 +176,13 @@ textarea.input { resize: vertical; min-height: 96px; line-height: 1.45; }
   font-size: 15px; font-weight: 600;
 }
 
+.warning-box {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 14px; border-radius: var(--radius-sm); background: var(--warning-soft); color: var(--warning-text);
+  font-size: 15px; font-weight: 600; line-height: 1.45;
+}
+.warning-box svg { flex: none; margin-top: 2px; }
+
 .panel { background: var(--surface); border-radius: var(--radius); padding: 24px; }
 .panel-lg { border-radius: var(--radius-lg); }
 
